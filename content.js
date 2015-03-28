@@ -30,7 +30,6 @@ function addQueueButtons() {
 function _addQueueButtonsLoop() {
   if($(".soundTitle__playButton").length != 0) {
     _addQueueButtons();  
-    _repositionUsernames(); 
   }
 
   setTimeout(function() {_addQueueButtonsLoop()}, 100);
@@ -47,7 +46,7 @@ function _addQueueButtons() {
   $(".soundTitle__playButton").each(function(index) {
     // If this playButton div already has a queue button, ignore it.
     if($(this).children(".queue-button").length === 0) {
-      var queueButton = $($(this).children(".sc-button-play")[0]).clone();
+      var queueButton = $($(this).children(".sc-button-play, .heroPlayButton")[0]).clone();
 
       // Style points.
       $(queueButton).addClass('queue-button');
@@ -73,23 +72,6 @@ function _getTrackHrefForQueueButton(queueButton) {
   return $(queueButton).parent().parent().find(".soundTitle__title").attr("href");
 }
 
-/*
-  Move the soundcloud widgets' usernames to the right to
-  make room for the queue button.
-*/
-function _repositionUsernames() {
-  // Move user names
-  $(".soundTitle__username").each(function() {
-    if(!(_hasParentClass($(this), "visualSound"))) {
-      $(this).css("margin-left", "68px");
-    } 
-  });
-
-  // visual sounds need special casing.
-  var visualUsernames = 
-    $(".visualSound.streamContext .soundTitle__title,.visualSound.streamContext .soundTitle__username");
-  visualUsernames.css("left", "68px");
-}
 
 function _hasParentClass(element, clazz) {
   var hasParent = false;
@@ -101,6 +83,10 @@ function _hasParentClass(element, clazz) {
     } 
   });
   return hasParent;
+}
+
+function _hasClass(element, clazz) {
+  return $.inArray(clazz, _getClasses(element)) > 0;
 }
 
 function _getClasses(element) {
