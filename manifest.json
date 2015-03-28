@@ -15,6 +15,7 @@
   "browser_action": {
       "default_icon": { "19": "art/19x19.png", "38": "art/38x38.png" },
       "default_title": "SoundQueue",
+      "default_title": "That's the tool tip",
       "default_popup": "popup.html"
   },
 
