@@ -12,7 +12,8 @@
   "icons": { "16": "art/16x16.png", "48": "art/48x48.png", "128": "art/128x128.png" },
   "browser_action": {
       "default_icon": { "19": "art/19x19.png", "38": "art/38x38.png" },
-      "default_title": "That's the tool tip"
+      "default_title": "That's the tool tip",
+      "default_popup": "popup.html"
   },
 
   "background": {
