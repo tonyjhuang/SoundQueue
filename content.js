@@ -43,10 +43,15 @@ function _addQueueButtonsLoop() {
 function _addQueueButtons() {
   var queueImage = chrome.extension.getURL("art/queue.png");
 
-  $(".soundTitle__playButton").each(function(index) {
+  $(".soundTitle__playButton, .soundBadge__actions .sc-button-group").each(function(index) {
     // If this playButton div already has a queue button, ignore it.
     if($(this).children(".queue-button").length === 0) {
       var queueButton = $($(this).children(".sc-button-play, .heroPlayButton")[0]).clone();
+
+      // Add class to queue buttons that exist in the hover play thing.
+      if($(this).hasClass("sc-button-group")) {
+        $(queueButton).addClass("hover-queue");
+      }
 
       // Style points.
       $(queueButton).addClass("queue-button");
@@ -54,7 +59,11 @@ function _addQueueButtons() {
         "background-image": "url(" + queueImage + ")"
       });
 
-      $(this).append(queueButton);
+      if($(this).hasClass("soundTitle__playButton")) {
+        $(this).append(queueButton);
+      } else {
+        $($(this).children()[0]).after(queueButton);
+      }
 
 
       // Attach click listener.
@@ -62,15 +71,20 @@ function _addQueueButtons() {
 
       // heroPlayButtons don't have sibling a tags so tell the background
       // script to use the current url.
-      if(_hasClass($(queueButton), "heroPlayButton")) {
+      if($(queueButton).hasClass("heroPlayButton")) {
         onClickFunction = function() {
-            chrome.runtime.sendMessage({track: "CURRENT_URL"});
+          chrome.runtime.sendMessage({track: "CURRENT_URL"});
         };
+      } else if ($(queueButton).hasClass("hover-queue")) {
+        onClickFunction = function() {
+          var trackHref = _getTrackHrefForHoverQueueButton(queueButton);
+          chrome.runtime.sendMessage({track: trackHref});
+        }
       } else {
         // Get the url from the queue button by checking it's sibling a tags.
         onClickFunction = function() {        
-            var trackHref = _getTrackHrefForQueueButton(queueButton);
-            chrome.runtime.sendMessage({track: trackHref});
+          var trackHref = _getTrackHrefForQueueButton(queueButton);
+          chrome.runtime.sendMessage({track: trackHref});
         };
       }
 
@@ -87,32 +101,17 @@ function _getTrackHrefForQueueButton(queueButton) {
   return $(queueButton).parent().parent().find(".soundTitle__title").attr("href");
 }
 
+/*
+  Make sure your queueButton element is attached to the 
+  DOM before calling this function!
+*/
+function _getTrackHrefForHoverQueueButton(queueButton) {
+  return $(queueButton).parent().parent().parent().parent().parent().find(".soundTitle__title").attr("href");
+}
+
 
 function _hasParentClass(element, clazz) {
-  var hasParent = false;
-  $(element).parents().each(function(parent) {
-    var classes = _getClasses($(this));
-    if($.inArray(clazz, classes) >= 0) {
-      hasParent = true;
-      return false; // return false to break from loop.
-    } 
-  });
-  return hasParent;
-}
-
-function _hasClass(element, clazz) {
-  console.log(_getClasses(element));
-  console.log($.inArray(clazz, _getClasses(element)));
-  return $.inArray(clazz, _getClasses(element)) >= 0;
-}
-
-function _getClasses(element) {
-  var classes = $(element).attr('class');
-  if(classes) {
-    return classes.split(/\s+/);
-  } else {
-    return undefined;
-  }
+  return $(element).parents(clazz).length > 0;
 }
 
 addQueueButtons();

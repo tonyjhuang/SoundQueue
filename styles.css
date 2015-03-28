@@ -24,3 +24,11 @@
 .soundTitle__username {
   margin-left: 68px !important;
 }
+
+.sc-button-small.sc-button-play.queue-button:before {
+  background-image: none !important;
+}
+
+.soundBadgeList__item .soundTitle__username {
+  margin-left: 0px !important;
+}
