@@ -16,6 +16,7 @@ function main() {
 	chrome.runtime.sendMessage({visible:true},
 		function(response) {
 			queue = response;
+			console.log(response);
 		}
 	);
 }
