@@ -7,3 +7,20 @@
 .sc-button-large.sc-button-play.queue-button:before {
   background-image: none !important;
 }
+
+.sc-button.heroPlayButton.queue-button:before {
+  background-image: none !important;
+}
+
+.soundTitle__usernameHeroContainer .soundTitle__usernameHero {
+  margin-left: 0px !important;
+}
+
+.visualSound.streamContext .soundTitle__title,.visualSound.streamContext .soundTitle__username {
+  margin-left: 10px !important;
+  left: 68px !important;
+}
+
+.soundTitle__username {
+  margin-left: 68px !important;
+}
