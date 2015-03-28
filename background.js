@@ -17,7 +17,7 @@ chrome.runtime.onMessage.addListener(
     }
     // if signaled popup is open, send back queue object
     else if(!sender.tab && message.visible) {
-      respond(queue);
+      sendResponse(queue);
     }
   }
 );

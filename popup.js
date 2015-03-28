@@ -10,7 +10,14 @@ function main() {
  		 //sound.play();
 	});
 
-	chrome.runtime.sendMessage({visible:true});
+	// Lets background script know that popup is opened
+	// and gets the queue object as a response
+	var queue;
+	chrome.runtime.sendMessage({visible:true},
+		function(response) {
+			queue = response;
+		}
+	);
 }
 
 main();
