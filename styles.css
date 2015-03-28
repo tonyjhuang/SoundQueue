@@ -1,0 +1,9 @@
+.queue-button {
+  background-repeat: no-repeat;
+  background-position: center;   
+  background-color: #F00 !important;
+}
+
+.sc-button-large.sc-button-play.queue-button:before {
+  background-image: none !important;
+}

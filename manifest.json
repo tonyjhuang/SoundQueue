@@ -1,5 +1,39 @@
 {
   "manifest_version": 2,
   "name": "SoundCloudQueue",
-  "version": "0.1"
+  "version": "0.1",
+
+  "description": "Queue builder for SoundCloud",
+  
+  "permissions": [
+    "tabs"
+  ],
+
+  "icons": { "16": "art/16x16.png", "48": "art/48x48.png", "128": "art/128x128.png" },
+  "browser_action": {
+      "default_icon": { "19": "art/19x19.png", "38": "art/38x38.png" },
+      "default_title": "That's the tool tip"
+  },
+
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": true
+  },
+  "content_scripts": [
+      {
+        "matches": [
+            "http://*.soundcloud.com/*",
+            "http://soundcloud.com/*",
+            "https://*.soundcloud.com/*",
+            "https://soundcloud.com/*"
+            ],
+        "js": ["jquery-2.1.3.min.js","soundcloud-sdk.js","content.js"],
+        "css": ["styles.css"]
+      }
+    ],
+
+  "web_accessible_resources": [
+    "art/*.png",
+    "art/*.jpg"
+  ] 
 }
