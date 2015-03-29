@@ -4,8 +4,11 @@ var currentIndex = -1;
 // length of the queue
 var queueLength;
 
-// Song starts out unpaused
+// song starts out unpaused
 var paused = false;
+
+// song starts out not in replay mode
+var replay = false;
 
 // highlightes the current played song
 // TODO: if we add delete this needs to be changed to not use nth child
@@ -57,7 +60,14 @@ function _clear() {
 }
 
 function _replay() {
+	replay = !replay
 	chrome.runtime.sendMessage({replay: true});
+	if (replay) {
+		console.log("replay please");
+		$(".replay").css("background-color", "#FFD1B2");
+	} else {
+		$(".replay").css("background-color", "");
+	}
 }
 
 $(function() {

@@ -30,9 +30,22 @@
 
 .media-player {
 	height: 40px;
-	width: 140px;
+	width: 220px;
+	margin-top:5px;
 	margin-right: auto;
 	margin-left: auto;
+}
+
+.header {
+	overflow:auto;
+}
+
+h1, .clear {
+	float:left;
+}
+
+h1 {
+	width: 360px;
 }
 
 .play {
@@ -43,7 +56,7 @@
 	display: inline;
 }
 
-.prev, .pause, .play, .next {
+.clear, .shuffle, .prev, .pause, .play, .next, .replay {
 	cursor: pointer;
 	height: 40px;
 	width: 40px;
