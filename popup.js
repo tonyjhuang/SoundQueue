@@ -40,6 +40,6 @@ function _jumpToSong(index) {
 }
 
 function _pause() {
-	chrome.runtime.sendMessage({pause: paused});
 	paused = !paused;
+	chrome.runtime.sendMessage({pause: paused});
 }

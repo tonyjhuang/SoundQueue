@@ -51,7 +51,7 @@ $(function() {
       else if(!sender.tab && message.visible) {
         sendResponse(queue);
       }
-      else if (!sender.tab && message.index) {
+      else if (!sender.tab && "index" in message) {
         queue.index = message.index;
         var currentSongUri = queue.tracks[queue.index].uri;
         playSong(currentSongUri);
