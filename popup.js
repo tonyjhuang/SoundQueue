@@ -1,35 +1,40 @@
-function appendToQueue(result) {
+// the current song in the queue being played
+var currentIndex;
+
+// highlightes the current played song
+function _highlightSong(index) {
+	console.log($(".song:nth-child(" + index + ")"));
+	$(".song:nth-child(" + index + ")").addClass("highlight");
+}
+
+// add song title to popup queue
+function _appendToQueue(result) {
 	var title = result.title;
-	var html = "<div class='song'><p>" + title + "</p></div>";
-	$(".queue-container").append(title);
+	var artwork_url = result.artwork_url;
+	var username = result.user.username
+	var html = "<div id='track" + i + "' class='song'><img src='" + artwork_url + "'><p>" + username + " - " + title + "</p></div>";
+	$(".queue-container").append(html);
 }
 
-function resolve(url) {
-	$.get('http://api.soundcloud.com/resolve.json?url=' + url + '&client_id=be1435461b3275ac389c9f47f61e2560',
-		function(result) {
-			console.log(result);
-			appendToQueue(result);
-	});
-}
+// Lets background script know that popup is opened
+// and gets the queue object as a response
+chrome.runtime.sendMessage({visible: true},
+	function(response) {
+		currentIndex = response.index; 
 
-function main() {
-	SC.initialize({
-		client_id: "be1435461b3275ac389c9f47f61e2560"
-	});
-
-	// Lets background script know that popup is opened
-	// and gets the queue object as a response
-
-	chrome.runtime.sendMessage({visible:true},
-		function(response) {
-			console.log(response);
-			for (i = 0; i < response.tracks.length; i++) {
-				resolve("https://soundcloud.com" + response.tracks[i]);
-			}
+		tracks = response.tracks;
+		for (i = 0; i < tracks.length; i++) {
+			_appendToQueue(tracks[i]);
 		}
-	);
+		_highlightSong(currentIndex + 1);
+	}
+);
 
-	
+function _jumpToSong(index) {
+	chrome.runtime.sendMessage({index: index});
+	currentIndex = index;
 }
 
-main();
+function _pause(paused) {
+	chrome.runtime.sendMessage({pause: paused});
+}
