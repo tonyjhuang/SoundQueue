@@ -27,6 +27,19 @@ function _appendToQueue(result, callback) {
 	callback();
 }
 
+function _jumpToSong(index) {
+	chrome.runtime.sendMessage({index: index});
+	_unhighlightSong(currentIndex);
+	currentIndex = index;
+	_highlightSong(index);
+}
+
+function _pause() {
+	paused = !paused;
+	document.getElementById("pause").src = "assets/images/play.svg";
+	chrome.runtime.sendMessage({pause: paused});
+}
+
 // Lets background script know that popup is opened
 // and gets the queue object as a response
 chrome.runtime.sendMessage({visible: true},
@@ -47,14 +60,4 @@ chrome.runtime.sendMessage({visible: true},
 	}
 );
 
-function _jumpToSong(index) {
-	chrome.runtime.sendMessage({index: index});
-	_unhighlightSong(currentIndex);
-	currentIndex = index;
-	_highlightSong(index);
-}
-
-function _pause() {
-	paused = !paused;
-	chrome.runtime.sendMessage({pause: paused});
-}
+$("#pause").click(_pause());
