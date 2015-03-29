@@ -11,12 +11,14 @@ function _highlightSong(index) {
 }
 
 // add song title to popup queue
-function _appendToQueue(result) {
+function _appendToQueue(result, callback) {
 	var title = result.title;
 	var artwork_url = result.artwork_url;
 	var username = result.user.username
 	var html = "<div id='track" + i + "' class='song'><img class='artwork' src='" + artwork_url + "'><p>" + username + "</p><p>" + title + "</p></div>";
 	$(".queue-container").append(html);
+
+	callback();
 }
 
 function _jumpToSong(index) {
@@ -37,10 +39,16 @@ function _play(playing) {
 chrome.runtime.sendMessage({visible: true},
 	function(response) {
 		currentIndex = response.index;
-
 		tracks = response.tracks;
 		for (i = 0; i < tracks.length; i++) {
-			_appendToQueue(tracks[i]);
+
+			var callback = 	function() {
+				$($(".song")[i]).click(function(e) {
+					_jumpToSong($(this).index());
+				});
+			};
+
+			_appendToQueue(tracks[i], callback);
 		}
 		_highlightSong(currentIndex);
 	}
