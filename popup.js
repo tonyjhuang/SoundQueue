@@ -7,7 +7,7 @@ function _appendToQueue(result) {
 
 // Lets background script know that popup is opened
 // and gets the queue object as a response
-chrome.runtime.sendMessage({visible:true},
+chrome.runtime.sendMessage({visible: true},
 	function(response) {
 		tracks = response.tracks;
 		for (i = 0; i < tracks.length; i++) {
@@ -15,3 +15,15 @@ chrome.runtime.sendMessage({visible:true},
 		}
 	}
 );
+
+function _jumpToSong(index) {
+	chrome.runtime.sendMessage({index: index});
+}
+
+function _pause(index) {
+	chrome.runtime.sendMessage({pause: true});
+}
+
+function _unpause(index) {
+	chrome.runtime.sendMessage({pause: false});
+}
