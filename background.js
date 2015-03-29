@@ -12,7 +12,6 @@ var queue = {
 };
 
 $(function() {
-
   var widget = SC.Widget("sc-widget");
 
   var addToQueue = function(url) {
@@ -39,16 +38,16 @@ $(function() {
   chrome.runtime.onMessage.addListener(
     function(message, sender, sendResponse) {
       // if given a track from content script, adds track to the queue
-      if(sender.tab && message.track === "CURRENT_URL") {
+      if (sender.tab && message.track === "CURRENT_URL") {
         chrome.tabs.getSelected(null, function(tab) {
           addToQueue(tab.url);
         });
       }
-      else if(sender.tab && ("track" in message)) {
+      else if (sender.tab && ("track" in message)) {
         addToQueue("https://soundcloud.com" + message.track);
       }
       // if signaled popup is open, send back queue object
-      else if(!sender.tab && message.visible) {
+      else if (!sender.tab && message.visible) {
         sendResponse(queue);
       }
       else if (!sender.tab && message.index) {
@@ -56,11 +55,10 @@ $(function() {
         var currentSongUri = queue.tracks[queue.index].uri;
         playSong(currentSongUri);
       }
-      else if(!sender.tab && "pause" in message) {
-        if(message.pause) {
+      else if (!sender.tab && "pause" in message) {
+        if (message.pause) {
           widget.pause();
-        }
-        else {
+        } else {
           widget.play();
         }
       }
