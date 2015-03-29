@@ -30,7 +30,7 @@ $(function() {
   var playSong = function(url) {
     widget.load(url, {
       callback: function() {
-        widget.play();
+        //widget.play();
       }
     });
   }

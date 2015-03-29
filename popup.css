@@ -1,5 +1,5 @@
 .queue-container {
-	width: 500px;
+	width: 400px;
 }
 
 .song {
@@ -10,14 +10,14 @@
 	background-color: #FFD1B2;
 }
 
-img {
+.artwork {
 	float:left;
 	margin-right:10px;
 }
 
 @font-face {
 	font-family: openSans;
-	src: url(Open_Sans/OpenSans-Regular);
+	src: url(assets/Open_Sans/OpenSans-Regular.ttf);
 }
 
 body {
