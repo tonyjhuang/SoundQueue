@@ -60,6 +60,11 @@ var playSong = function(index) {
   });
 }
 
+function shuffle(o){ 
+    for(var j, x, i = o.length; i; j = Math.floor(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
+    return o;
+};
+
 $(function() {
   widget = SC.Widget("sc-widget");
 
@@ -81,6 +86,11 @@ $(function() {
       }
       // if signaled popup is open, send back queue object
       else if (!sender.tab && message.visible) {
+        sendResponse(queue);
+      }
+      else if(!sender.tab && message.shuffle) {
+        queue.index = 0;
+        shuffle(queue.tracks);
         sendResponse(queue);
       }
       else if (!sender.tab && "index" in message) {

@@ -70,28 +70,37 @@ function _replay() {
 	}
 }
 
+function _shuffle() {
+	$(".queue-container").empty();
+	chrome.runtime.sendMessage({shuffle: true},
+		_initializeQueue
+	);
+}
+
+var _initializeQueue = function(response) {
+	if (response) {
+		currentIndex = response.index;
+		tracks = response.tracks;
+		queueLength = tracks.length;
+		for (i = 0; i < tracks.length; i++) {
+
+			var callback = 	function() {
+				$($(".song")[i]).click(function(e) {
+					_jumpToSong($(this).index());
+				});
+			};
+
+			_appendToQueue(tracks[i], callback);
+		}
+		_highlightSong(currentIndex);
+	}
+}
+
 $(function() {
 	// Lets background script know that popup is opened
 	// and gets the queue object as a response
 	chrome.runtime.sendMessage({visible: true},
-		function(response) {
-			if (response) {
-				currentIndex = response.index;
-				tracks = response.tracks;
-				queueLength = tracks.length;
-				for (i = 0; i < tracks.length; i++) {
-
-					var callback = 	function() {
-						$($(".song")[i]).click(function(e) {
-							_jumpToSong($(this).index());
-						});
-					};
-
-					_appendToQueue(tracks[i], callback);
-				}
-				_highlightSong(currentIndex);
-			}
-		}
+		_initializeQueue
 	);
 
 	// listens for the next song if the previous song ends
@@ -133,4 +142,8 @@ $(function() {
 	$(".replay").click(function() {
 		_replay();
 	});
+
+	$(".shuffle").click(function(e) {
+		_shuffle();
+	})
 });
