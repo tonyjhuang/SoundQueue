@@ -1,5 +1,7 @@
+// the current song in the queue being played
 var currentIndex;
 
+// highlightes the current played song
 function _highlightSong(index) {
 	console.log($(".song:nth-child(" + index + ")"));
 	$(".song:nth-child(" + index + ")").addClass("highlight");
@@ -16,7 +18,7 @@ function _appendToQueue(result) {
 
 // Lets background script know that popup is opened
 // and gets the queue object as a response
-chrome.runtime.sendMessage({visible:true},
+chrome.runtime.sendMessage({visible: true},
 	function(response) {
 		currentIndex = response.index; 
 
@@ -27,3 +29,12 @@ chrome.runtime.sendMessage({visible:true},
 		_highlightSong(currentIndex + 1);
 	}
 );
+
+function _jumpToSong(index) {
+	chrome.runtime.sendMessage({index: index});
+	currentIndex = index;
+}
+
+function _pause(paused) {
+	chrome.runtime.sendMessage({pause: paused});
+}
