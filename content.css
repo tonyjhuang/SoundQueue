@@ -36,3 +36,7 @@
 .toast-top-right {
   top: 50px !important;
 }
+
+.toast-success {
+  background-color: #333333 !important;
+}

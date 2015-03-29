@@ -71,6 +71,7 @@ function _addQueueButtons() {
       }
 
       // Style points.
+      $(queueButton).prop("title", "Add to queue");
       $(queueButton).addClass("queue-button");
       $(queueButton).css({
         "background-image": "url(" + queueImage + ")"
