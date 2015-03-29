@@ -11,12 +11,20 @@ var queue = {
     "index": -1
 };
 
-$(function() {
-  var widget = SC.Widget("sc-widget");
+var widget;
 
-  var addToQueue = function(url) {
-    SC.get('http://api.soundcloud.com/resolve.json?url=' + url,
-    function(result) { 
+var songDone = function() {
+  queue.index++;
+  console.log("index = " + queue.index + ", tracks length = " + queue.tracks.length);
+  if (queue.tracks.length != queue.index) {
+    playSong(queue.index);
+    chrome.runtime.sendMessage({"nextSong": queue.index});
+  }
+}
+
+var addToQueue = function(url) {
+  SC.get('http://api.soundcloud.com/resolve.json?url=' + url,
+    function(result) {
       console.log(result);
       if(result.kind == "track") { // single track
         queue["tracks"].push(result);
@@ -28,20 +36,29 @@ $(function() {
       }
 
       if (queue.index === -1) {
-          queue.index = 0;
-          var currentSongUri = queue.tracks[queue.index].uri;
-          playSong(currentSongUri);
-        }
-    });
-  }
-
-  var playSong = function(url) {
-    widget.load(url, {
-      callback: function() {
-        widget.play();
+        queue.index = 0;
+        var currentSongUri = queue.tracks[queue.index].uri;
+        playSong(queue.index);
       }
-    });
-  }
+    }
+  );
+}
+
+var playSong = function(index) {
+  var currentSongUri = queue.tracks[index].uri;
+  widget.load(currentSongUri, {
+    callback: function() {
+      widget.play();
+    }
+  });
+}
+
+$(function() {
+  widget = SC.Widget("sc-widget");
+
+  widget.bind(SC.Widget.Events.FINISH, function() {
+    songDone();
+  });
 
   // Listens to messages from content script and popup script
   chrome.runtime.onMessage.addListener(
@@ -61,8 +78,7 @@ $(function() {
       }
       else if (!sender.tab && "index" in message) {
         queue.index = message.index;
-        var currentSongUri = queue.tracks[queue.index].uri;
-        playSong(currentSongUri);
+        playSong(queue.index);
       }
       else if (!sender.tab && "pause" in message) {
         if (message.pause) {
@@ -73,6 +89,4 @@ $(function() {
       }
     }
   );
-
-  //playSong("https://api.soundcloud.com/tracks/196848636");
 });
