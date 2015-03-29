@@ -8,19 +8,17 @@ SC.initialize({
 // tracks[0].url for song url
 var queue = {
     "tracks": [],
-    "index": -1
+    "index": -1,
+    "replay": false
+
 };
 
 var widget;
 
-var replay = false;
-
 var songDone = function() {
-  if (replay) {
-    console.log("replaying");
+  if (queue.replay) {
     playSong(queue.index);
   } else {
-    console.log("not replaying");
     queue.index++;
     if (queue.tracks.length != queue.index) {
       playSong(queue.index);
@@ -60,7 +58,7 @@ var playSong = function(index) {
   });
 }
 
-function shuffle(o){ 
+function shuffle(o){
     for(var j, x, i = o.length; i; j = Math.floor(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
     return o;
 };
@@ -110,7 +108,8 @@ $(function() {
         sendResponse(queue);
       }
       else if (!sender.tab && "replay" in message) {
-        replay = !replay;
+        queue.replay = !queue.replay;
+        sendResponse({replay: queue.replay});
       }
     }
   );

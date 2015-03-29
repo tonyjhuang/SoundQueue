@@ -59,11 +59,8 @@ function _clear() {
 	$(".queue-container").empty();
 }
 
-function _replay() {
-	replay = !replay
-	chrome.runtime.sendMessage({replay: true});
-	if (replay) {
-		console.log("replay please");
+function _replay(isEnabled) {
+	if (isEnabled) {
 		$(".replay").css("background-color", "#FFD1B2");
 	} else {
 		$(".replay").css("background-color", "");
@@ -93,6 +90,7 @@ var _initializeQueue = function(response) {
 			_appendToQueue(tracks[i], callback);
 		}
 		_highlightSong(currentIndex);
+		_replay(response.replay);
 	}
 }
 
@@ -129,7 +127,10 @@ $(function() {
 	});
 
 	$(".next").click(function(e) {
-		if(currentIndex < queueLength - 1) {
+		var queueModel = chrome.extension.getBackgroundPage().queue;
+		if (queueModel.replay) {
+			_jumpToSong(currentIndex);
+		} else if(currentIndex < queueLength - 1) {
 			_jumpToSong(currentIndex + 1);
 		}
 	});
@@ -140,7 +141,10 @@ $(function() {
 	});
 
 	$(".replay").click(function() {
-		_replay();
+		chrome.runtime.sendMessage({replay: true}, function(response) {
+			console.log("is replay callback");
+			_replay(response.replay);
+		});
 	});
 
 	$(".shuffle").click(function(e) {
