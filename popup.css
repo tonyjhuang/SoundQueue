@@ -14,3 +14,12 @@ img {
 	float:left;
 	margin-right:10px;
 }
+
+@font-face {
+	font-family: openSans;
+	src: url(Open_Sans/OpenSans-Regular);
+}
+
+body {
+	font-family:openSans;
+}
