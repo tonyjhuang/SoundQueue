@@ -1,34 +1,29 @@
-$(function() {
-// keeps track of all the tracks in the queue
-// and the current song playing
+// Initialize Soundcloud SDK
+SC.initialize({
+  client_id: "be1435461b3275ac389c9f47f61e2560"
+});
+
+// keeps track of all the tracks in the queue and the current song playing
+// tracks[0].title for song title
+// tracks[0].url for song url
 var queue = {
-  /*
-  tracks[0].title for song title
-  tracks[0].url for song url
-  */
-  "tracks": [],
-  "index": 0
-};
-
-  var widget = SC.Widget("sc-widget");
-
-  // Initialize Soundcloud SDK
-  SC.initialize({
-    client_id: "be1435461b3275ac389c9f47f61e2560"
-  });
-
-  // keeps track of all the tracks in the queue and the current song playing
-  // tracks[0].title for song title
-  // tracks[0].url for song url
-  var queue = {
     "tracks": [],
     "index": -1
-  };
+};
+
+$(function() {
+
+  var widget = SC.Widget("sc-widget");
 
   var addToQueue = function(url) {
     SC.get('http://api.soundcloud.com/resolve.json?url=' + url,
     function(result) {
       queue.tracks.push(result);
+      if (queue.tracks.length == 1) {
+        queue.index = 0;
+        var currentSongUri = queue.tracks[queue.index].uri;
+        playSong(currentSongUri);
+      }
     });
   }
 
@@ -60,9 +55,10 @@ var queue = {
         queue.index = message.index;
         var currentSongUri = queue.tracks[queue.index].uri;
         playSong(currentSongUri);
+
       }
     }
   );
 
-  playSong("https://api.soundcloud.com/tracks/196848636");
+  //playSong("https://api.soundcloud.com/tracks/196848636");
 });

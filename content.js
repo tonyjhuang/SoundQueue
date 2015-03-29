@@ -40,13 +40,13 @@ function addQueueButtons() {
 
 /*
   Constantly try to add queue buttons and reposition usernames. Since
-  SoundCloud is an SPA, we don't get notified when the user scrolls 
+  SoundCloud is an SPA, we don't get notified when the user scrolls
   down to load more sounds or navigates to another page (e.g. a user
-  or track). 
+  or track).
 */
 function _addQueueButtonsLoop() {
   if($(".soundTitle__playButton").length != 0) {
-    _addQueueButtons();  
+    _addQueueButtons();
   }
 
   setTimeout(function() {_addQueueButtonsLoop()}, 100);
@@ -58,7 +58,7 @@ function _addQueueButtonsLoop() {
   styling and attaches an event listener.
 */
 function _addQueueButtons() {
-  var queueImage = chrome.extension.getURL("art/queue.png");
+  var queueImage = chrome.extension.getURL("assets/images/queue.png");
 
   $(".soundTitle__playButton, .soundBadge__actions .sc-button-group").each(function(index) {
     // If this playButton div already has a queue button, ignore it.
@@ -103,7 +103,7 @@ function _addQueueButtons() {
 }
 
 /*
-  Make sure your queueButton element is attached to the 
+  Make sure your queueButton element is attached to the
   DOM before calling this function!
 */
 function _getTrackHrefForQueueButton(queueButton) {
@@ -111,7 +111,7 @@ function _getTrackHrefForQueueButton(queueButton) {
 }
 
 /*
-  Make sure your queueButton element is attached to the 
+  Make sure your queueButton element is attached to the
   DOM before calling this function!
 */
 function _getTrackHrefForHoverQueueButton(queueButton) {
