@@ -5,9 +5,15 @@ var currentIndex;
 var paused = false;
 
 // highlightes the current played song
+// TODO: if we add delete this needs to be changed to not use nth child
 function _highlightSong(index) {
 	index++;
 	$(".song:nth-child(" + index + ")").addClass("highlight");
+}
+
+function _unhighlightSong(index) {
+	index++;
+	$(".song:nth-child(" + index + ")").removeClass("highlight");
 }
 
 // add song title to popup queue
@@ -19,19 +25,6 @@ function _appendToQueue(result, callback) {
 	$(".queue-container").append(html);
 
 	callback();
-}
-
-function _jumpToSong(index) {
-	chrome.runtime.sendMessage({index: index});
-	currentIndex = index;
-}
-
-function _pause(paused) {
-	chrome.runtime.sendMessage({pause: paused});
-}
-
-function _play(playing) {
-	chrome.runtime.sendMessage({play: playing});
 }
 
 // Lets background script know that popup is opened
@@ -56,6 +49,7 @@ chrome.runtime.sendMessage({visible: true},
 
 function _jumpToSong(index) {
 	chrome.runtime.sendMessage({index: index});
+	_unhighlightSong(currentIndex);
 	currentIndex = index;
 	_highlightSong(index);
 }

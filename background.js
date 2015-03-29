@@ -16,13 +16,22 @@ $(function() {
 
   var addToQueue = function(url) {
     SC.get('http://api.soundcloud.com/resolve.json?url=' + url,
-    function(result) {
-      queue.tracks.push(result);
-      if (queue.tracks.length == 1) {
-        queue.index = 0;
-        var currentSongUri = queue.tracks[queue.index].uri;
-        playSong(currentSongUri);
+    function(result) { 
+      console.log(result);
+      if(result.kind == "track") { // single track
+        queue["tracks"].push(result);
+      } else { // playlist
+        $.each(result.tracks, function(index) {
+          console.log(result.tracks[index]);
+          queue["tracks"].push(result.tracks[index]);
+        });
       }
+
+      if (queue.index === -1) {
+          queue.index = 0;
+          var currentSongUri = queue.tracks[queue.index].uri;
+          playSong(currentSongUri);
+        }
     });
   }
 
