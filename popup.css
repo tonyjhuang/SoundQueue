@@ -5,6 +5,8 @@
 .queue-container {
 	width: 400px;
 	height:400px;
+	border-top: 1px solid #D3D3D3;
+	border-bottom: 1px solid #D3D3D3;
 	overflow-y: scroll;
 }
 
