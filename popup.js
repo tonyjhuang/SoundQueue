@@ -1,4 +1,3 @@
-
 // the current song in the queue being played
 var currentIndex = -1;
 
@@ -38,6 +37,15 @@ function _jumpToSong(index) {
 function _pause() {
 	paused = !paused;
 	chrome.runtime.sendMessage({pause: paused});
+	$(".pause").css("display", "none");
+	$(".play").css("display", "inline");
+}
+
+function _play() {
+	paused = !paused;
+	chrome.runtime.sendMessage({pause: paused});
+	$(".play").css("display", "none");
+	$(".pause").css("display", "inline");
 }
 
 $(function() {
@@ -73,4 +81,13 @@ $(function() {
 			}
 	  }
 	);
+
+	$(".pause").click(function() {
+		console.log("this is being called");
+		_pause();
+	});
+
+	$(".play").click(function() {
+		_play();
+	})
 });

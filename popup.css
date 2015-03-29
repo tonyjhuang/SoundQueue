@@ -1,11 +1,11 @@
 * {
-	margin:0;
+	margin: 0;
 }
 
 .queue-container {
 	width: 400px;
 	height:400px;
-	overflow-y:scroll;
+	overflow-y: scroll;
 }
 
 .song {
@@ -24,21 +24,29 @@
 }
 
 .artwork {
-	float:left;
-	margin-right:10px;
+	float: left;
+	margin-right: 10px;
 }
 
 .media-player {
-	height:40px;
-	width:140px;
-	margin-right:auto;
-	margin-left:auto;
+	height: 40px;
+	width: 140px;
+	margin-right: auto;
+	margin-left: auto;
 }
 
-.media-btn {
-	cursor:pointer;
-	height:40px;
-	width:40px;
+.play {
+	display: none;
+}
+
+.pause {
+	display: inline;
+}
+
+.prev, .pause, .play, .next {
+	cursor: pointer;
+	height: 40px;
+	width: 40px;
 }
 
 @font-face {
@@ -47,5 +55,5 @@
 }
 
 body {
-	font-family:openSans;
+	font-family: openSans;
 }
