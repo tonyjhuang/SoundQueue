@@ -6,6 +6,12 @@
 	height: 100px;
 }
 
+.song:hover {
+  cursor: pointer;
+  background-color: #FFD1B2;
+  opacity: 0.4;
+}
+
 .highlight {
 	background-color: #FFD1B2;
 }
