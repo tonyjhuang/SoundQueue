@@ -1,0 +1,16 @@
+.queue-container {
+	width: 500px;
+}
+
+.song {
+	height: 100px;
+}
+
+.highlight {
+	background-color: #FFD1B2;
+}
+
+img {
+	float:left;
+	margin-right:10px;
+}

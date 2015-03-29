@@ -1,15 +1,17 @@
 var currentIndex;
 
 function _highlightSong(index) {
-	console.log($(".queue-container:nth-child(" + index + ")"));
-	$(".queue-container:nth-child(" + index + ")").addClass("highlight");
+	console.log($(".song:nth-child(" + index + ")"));
+	$(".song:nth-child(" + index + ")").addClass("highlight");
 }
 
 // add song title to popup queue
 function _appendToQueue(result) {
 	var title = result.title;
-	var html = "<div class='song'><p>" + title + "</p></div>";
-	$(".queue-container").append(title);
+	var artwork_url = result.artwork_url;
+	var username = result.user.username
+	var html = "<div id='track" + i + "' class='song'><img src='" + artwork_url + "'><p>" + username + " - " + title + "</p></div>";
+	$(".queue-container").append(html);
 }
 
 // Lets background script know that popup is opened
@@ -22,7 +24,6 @@ chrome.runtime.sendMessage({visible:true},
 		for (i = 0; i < tracks.length; i++) {
 			_appendToQueue(tracks[i]);
 		}
-
-		_highlightSong(currentIndex);
+		_highlightSong(currentIndex + 1);
 	}
 );
