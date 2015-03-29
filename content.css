@@ -32,3 +32,7 @@
 .soundBadgeList__item .soundTitle__username {
   margin-left: 0px !important;
 }
+
+.toast-top-right {
+  top: 50px !important;
+}

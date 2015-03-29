@@ -1,4 +1,21 @@
 
+toastr.options = {
+  "closeButton": false,
+  "debug": false,
+  "newestOnTop": true,
+  "progressBar": false,
+  "positionClass": "toast-top-right",
+  "preventDuplicates": false,
+  "onclick": null,
+  "showDuration": "300",
+  "hideDuration": "1000",
+  "timeOut": "1500",
+  "extendedTimeOut": "1000",
+  "showEasing": "swing",
+  "hideEasing": "linear",
+  "showMethod": "fadeIn",
+  "hideMethod": "fadeOut"
+}
 
 chrome.extension.onMessage.addListener(function(message, sender, sendResponse) {
   // browser button click.
@@ -67,28 +84,19 @@ function _addQueueButtons() {
 
 
       // Attach click listener.
-      var onClickFunction;
-
-      // heroPlayButtons don't have sibling a tags so tell the background
-      // script to use the current url.
+      var trackHref;
       if($(queueButton).hasClass("heroPlayButton")) {
-        onClickFunction = function() {
-          chrome.runtime.sendMessage({track: "CURRENT_URL"});
-        };
+        trackHref = "CURRENT_URL";
       } else if ($(queueButton).hasClass("hover-queue")) {
-        onClickFunction = function() {
-          var trackHref = _getTrackHrefForHoverQueueButton(queueButton);
-          chrome.runtime.sendMessage({track: trackHref});
-        }
+        var trackHref = _getTrackHrefForHoverQueueButton(queueButton);
       } else {
-        // Get the url from the queue button by checking it's sibling a tags.
-        onClickFunction = function() {        
-          var trackHref = _getTrackHrefForQueueButton(queueButton);
-          chrome.runtime.sendMessage({track: trackHref});
-        };
+        var trackHref = _getTrackHrefForQueueButton(queueButton);
       }
 
-      $(queueButton).on("click", onClickFunction);
+      $(queueButton).on("click", function() {
+        toastr["success"]("Added song to queue.", "SoundQueue");
+        chrome.runtime.sendMessage({track: trackHref});
+      });
     }
   });
 }

@@ -32,8 +32,8 @@
             "https://*.soundcloud.com/*",
             "https://soundcloud.com/*"
             ],
-        "js": ["jquery-2.1.3.min.js","soundcloud-sdk.js","content.js"],
-        "css": ["content.css"]
+        "js": ["jquery-2.1.3.min.js","toastr.min.js","content.js"],
+        "css": ["content.css", "toastr.min.css"]
       }
     ],
 
