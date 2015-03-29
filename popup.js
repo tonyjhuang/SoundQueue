@@ -51,6 +51,15 @@ function _play() {
 	$(".pause").css("display", "inline");
 }
 
+function _clear() {
+	chrome.runtime.sendMessage({clear: true});
+	$(".queue-container").empty();
+}
+
+function _replay() {
+	chrome.runtime.sendMessage({replay: true});
+}
+
 $(function() {
 	// Lets background script know that popup is opened
 	// and gets the queue object as a response
@@ -87,7 +96,6 @@ $(function() {
 	);
 
 	$(".pause").click(function() {
-		console.log("this is being called");
 		_pause();
 	});
 
@@ -105,5 +113,14 @@ $(function() {
 		if(currentIndex < queueLength - 1) {
 			_jumpToSong(currentIndex + 1);
 		}
+	});
+
+	$(".clear").click(function() {
+		_pause();
+		_clear();
+	});
+
+	$(".replay").click(function() {
+		_replay();
 	});
 });

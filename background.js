@@ -13,12 +13,19 @@ var queue = {
 
 var widget;
 
+var replay = false;
+
 var songDone = function() {
-  queue.index++;
-  console.log("index = " + queue.index + ", tracks length = " + queue.tracks.length);
-  if (queue.tracks.length != queue.index) {
+  if (replay) {
+    console.log("replaying");
     playSong(queue.index);
-    chrome.runtime.sendMessage({"nextSong": queue.index});
+  } else {
+    console.log("not replaying");
+    queue.index++;
+    if (queue.tracks.length != queue.index) {
+      playSong(queue.index);
+      chrome.runtime.sendMessage({"nextSong": queue.index});
+    }
   }
 }
 
@@ -86,6 +93,14 @@ $(function() {
         } else {
           widget.play();
         }
+      }
+      else if (!sender.tab && "clear" in message) {
+        queue.tracks = [];
+        queue.index = -1;
+        sendResponse(queue);
+      }
+      else if (!sender.tab && "replay" in message) {
+        replay = !replay;
       }
     }
   );
