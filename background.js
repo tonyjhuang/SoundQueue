@@ -30,7 +30,7 @@ $(function() {
   var playSong = function(url) {
     widget.load(url, {
       callback: function() {
-        //widget.play();
+        widget.play();
       }
     });
   }
@@ -55,6 +55,14 @@ $(function() {
         queue.index = message.index;
         var currentSongUri = queue.tracks[queue.index].uri;
         playSong(currentSongUri);
+      }
+      else if(!sender.tab && "pause" in message) {
+        if(message.pause) {
+          widget.pause();
+        }
+        else {
+          widget.play();
+        }
       }
     }
   );

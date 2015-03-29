@@ -1,7 +1,10 @@
 // the current song in the queue being played
 var currentIndex;
 
-// highlights the current played song
+// Song starts out unpaused
+var paused = false;
+
+// highlightes the current played song
 function _highlightSong(index) {
 	console.log($(".song:nth-child(" + index + ")"));
 	$(".song:nth-child(" + index + ")").addClass("highlight");
@@ -20,7 +23,7 @@ function _appendToQueue(result) {
 // and gets the queue object as a response
 chrome.runtime.sendMessage({visible: true},
 	function(response) {
-		currentIndex = response.index; 
+		currentIndex = response.index;
 
 		tracks = response.tracks;
 		for (i = 0; i < tracks.length; i++) {
@@ -33,8 +36,10 @@ chrome.runtime.sendMessage({visible: true},
 function _jumpToSong(index) {
 	chrome.runtime.sendMessage({index: index});
 	currentIndex = index;
+	_highlightSong(index + 1);
 }
 
-function _pause(paused) {
+function _pause() {
 	chrome.runtime.sendMessage({pause: paused});
+	paused = !paused;
 }
