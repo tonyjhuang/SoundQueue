@@ -6,6 +6,7 @@ var paused = false;
 
 // highlightes the current played song
 function _highlightSong(index) {
+	index++;
 	$(".song:nth-child(" + index + ")").addClass("highlight");
 }
 
@@ -41,17 +42,17 @@ chrome.runtime.sendMessage({visible: true},
 		for (i = 0; i < tracks.length; i++) {
 			_appendToQueue(tracks[i]);
 		}
-		_highlightSong(currentIndex + 1);
+		_highlightSong(currentIndex);
 	}
 );
 
 function _jumpToSong(index) {
 	chrome.runtime.sendMessage({index: index});
 	currentIndex = index;
-	_highlightSong(index + 1);
+	_highlightSong(index);
 }
 
 function _pause() {
-	chrome.runtime.sendMessage({pause: paused});
 	paused = !paused;
+	chrome.runtime.sendMessage({pause: paused});
 }
