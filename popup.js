@@ -1,5 +1,6 @@
+
 // the current song in the queue being played
-var currentIndex;
+var currentIndex = -1;
 
 // Song starts out unpaused
 var paused = false;
@@ -27,26 +28,6 @@ function _appendToQueue(result, callback) {
 	callback();
 }
 
-// Lets background script know that popup is opened
-// and gets the queue object as a response
-chrome.runtime.sendMessage({visible: true},
-	function(response) {
-		currentIndex = response.index;
-		tracks = response.tracks;
-		for (i = 0; i < tracks.length; i++) {
-
-			var callback = 	function() {
-				$($(".song")[i]).click(function(e) {
-					_jumpToSong($(this).index());
-				});
-			};
-
-			_appendToQueue(tracks[i], callback);
-		}
-		_highlightSong(currentIndex);
-	}
-);
-
 function _jumpToSong(index) {
 	chrome.runtime.sendMessage({index: index});
 	_unhighlightSong(currentIndex);
@@ -58,3 +39,38 @@ function _pause() {
 	paused = !paused;
 	chrome.runtime.sendMessage({pause: paused});
 }
+
+$(function() {
+	// Lets background script know that popup is opened
+	// and gets the queue object as a response
+	chrome.runtime.sendMessage({visible: true},
+		function(response) {
+			if (response) {
+				currentIndex = response.index;
+				tracks = response.tracks;
+				for (i = 0; i < tracks.length; i++) {
+
+					var callback = 	function() {
+						$($(".song")[i]).click(function(e) {
+							_jumpToSong($(this).index());
+						});
+					};
+
+					_appendToQueue(tracks[i], callback);
+				}
+				_highlightSong(currentIndex);
+			}
+		}
+	);
+
+	// listens for the next song if the previous song ends
+	chrome.runtime.onMessage.addListener(
+	  function(message, sender, sendResponse) {
+	  	if (message.nextSong) {
+		  	_unhighlightSong(currentIndex);
+				currentIndex = message.nextSong;
+				_highlightSong(currentIndex);
+			}
+	  }
+	);
+});
