@@ -4,16 +4,16 @@
   "version": "0.1",
 
   "description": "Queue builder for SoundCloud",
-  
+
   "permissions": [
     "tabs",
     "https://api.soundcloud.com/"
   ],
 
-  "icons": { "16": "art/16x16.png", "48": "art/48x48.png", "128": "art/128x128.png" },
+  "icons": { "16": "assets/images/16x16.png", "48": "assets/images/48x48.png", "128": "assets/images/128x128.png" },
 
   "browser_action": {
-      "default_icon": { "19": "art/19x19.png", "38": "art/38x38.png" },
+      "default_icon": { "19": "assets/images/19x19.png", "38": "assets/images/38x38.png" },
       "default_title": "SoundQueue",
       "default_title": "That's the tool tip",
       "default_popup": "popup.html"
@@ -32,13 +32,13 @@
             "https://*.soundcloud.com/*",
             "https://soundcloud.com/*"
             ],
-        "js": ["jquery-2.1.3.min.js","toastr.min.js","content.js"],
-        "css": ["content.css", "toastr.min.css"]
+        "js": ["lib/jquery-2.1.3.min.js","lib/toastr.min.js","content.js"],
+        "css": ["content.css", "lib/toastr.min.css"]
       }
     ],
 
   "web_accessible_resources": [
-    "art/*.png",
-    "art/*.jpg"
-  ] 
+    "assets/images/*.png",
+    "assets/images/*.jpg"
+  ]
 }

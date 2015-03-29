@@ -64,5 +64,5 @@ var queue = {
     }
   );
 
-  //playSong("https://api.soundcloud.com/tracks/196848636");
+  playSong("https://api.soundcloud.com/tracks/196848636");
 });
