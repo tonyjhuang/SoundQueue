@@ -55,7 +55,6 @@ $(function() {
         queue.index = message.index;
         var currentSongUri = queue.tracks[queue.index].uri;
         playSong(currentSongUri);
-
       }
     }
   );
