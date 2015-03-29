@@ -56,6 +56,7 @@ function _play() {
 
 function _clear() {
 	chrome.runtime.sendMessage({clear: true});
+	_replay(false);
 	$(".queue-container").empty();
 }
 
