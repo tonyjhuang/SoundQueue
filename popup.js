@@ -1,7 +1,7 @@
 // the current song in the queue being played
 var currentIndex;
 
-// highlightes the current played song
+// highlights the current played song
 function _highlightSong(index) {
 	console.log($(".song:nth-child(" + index + ")"));
 	$(".song:nth-child(" + index + ")").addClass("highlight");
@@ -12,7 +12,7 @@ function _appendToQueue(result) {
 	var title = result.title;
 	var artwork_url = result.artwork_url;
 	var username = result.user.username
-	var html = "<div id='track" + i + "' class='song'><img src='" + artwork_url + "'><p>" + username + " - " + title + "</p></div>";
+	var html = "<div id='track" + i + "' class='song'><img class='artwork' src='" + artwork_url + "'><p>" + username + "</p><p>" + title + "</p><img src='assets/images/play.svg'></div>";
 	$(".queue-container").append(html);
 }
 
