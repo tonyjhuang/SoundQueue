@@ -13,6 +13,12 @@
 	border-top: 1px solid #D3D3D3;
 }
 
+.song:hover {
+  cursor: pointer;
+  background-color: #FFD1B2;
+  opacity: 0.4;
+}
+
 .highlight {
 	background-color: #FFD1B2;
 }
