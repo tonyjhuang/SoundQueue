@@ -32,7 +32,7 @@
 
 .media-player {
 	height: 40px;
-	width: 220px;
+	width: 215px;
 	margin-top:5px;
 	margin-right: auto;
 	margin-left: auto;
@@ -42,12 +42,17 @@
 	overflow:auto;
 }
 
-h1, .clear {
+.logo, h1, .clear {
 	float:left;
+	vertical-align:middle;
 }
 
 h1 {
-	width: 320px;
+	width: 315px;
+}
+
+.clear {
+	cursor: pointer;
 }
 
 .play {
@@ -58,10 +63,26 @@ h1 {
 	display: inline;
 }
 
-.clear, .shuffle, .prev, .pause, .play, .next, .replay {
-	cursor: pointer;
+.clear, .pause, .play {
 	height: 40px;
 	width: 40px;
+}
+
+.prev, .next {
+	height: 30px;
+	width: 30px;
+}
+
+.shuffle, .replay {
+	height: 25px;
+	width: 25px;
+}
+
+.pause, .play, .prev, .next, .shuffle, .replay {
+	cursor: pointer;
+	margin-right:5px;
+	margin-left:5px;
+	vertical-align:middle;
 }
 
 @font-face {
