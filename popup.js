@@ -14,20 +14,28 @@ var replay = false;
 // TODO: if we add delete this needs to be changed to not use nth child
 function _highlightSong(index) {
 	index++;
-	$(".song:nth-child(" + index + ")").addClass("highlight");
+	$(".song:nth-child(" + index + ")").addClass("now-playing");
 }
 
 function _unhighlightSong(index) {
 	index++;
-	$(".song:nth-child(" + index + ")").removeClass("highlight");
+	$(".song:nth-child(" + index + ")").removeClass("now-playing");
 }
 
-// add song title to popup queue
+// add song row to queue
 function _appendToQueue(result, callback) {
-	var title = result.title;
-	var artwork_url = result.artwork_url;
-	var username = result.user.username
-	var html = "<div id='track" + i + "' class='song'><img class='artwork' src='" + artwork_url + "'><p>" + username + "</p><p>" + title + "</p></div>";
+  var id = "track" + i;
+  var artwork = result.artwork_url;
+  var artist = result.user.username
+  var title = result.title;
+
+	var html ="<div id='" + id + "' class='song valign-wrapper'>" +
+              "<img class='artwork' src='" + artwork + "'>" + 
+              "<div class='valign song-meta'>" +
+                "<p class='song-artist truncate'>" + artist + "</p>" +
+                "<p class='song-title truncate'>" + title + "</p>" +
+              "</div>" + 
+            "</div>";
 	$(".queue-container").append(html);
 
 	callback();
