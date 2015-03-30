@@ -30,9 +30,9 @@ function _appendToQueue(result, callback) {
   var title = result.title;
 
 	var html ="<div id='" + id + "' class='song valign-wrapper'>" +
-              "<img class='artwork' src='" + artwork + "'>" + 
+              "<img class='song-artwork' src='" + artwork + "'>" + 
               "<div class='valign song-meta'>" +
-                "<p class='song-artist truncate'>" + artist + "</p>" +
+                "<p class='song-artist truncate waves-effect waves-orange btn-flat'>" + artist + "</p>" +
                 "<p class='song-title truncate'>" + title + "</p>" +
               "</div>" + 
             "</div>";

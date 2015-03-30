@@ -4,7 +4,6 @@ html {
 }
 
 body {
-  padding: 0px;
   width: 400px;
   height:400px;
 }
@@ -39,6 +38,7 @@ body {
 }
 
 .song-meta {
+  margin-top: -10px;
   width: 240px;
 }
 
@@ -51,20 +51,23 @@ body {
   background-color: #FFF !important;
 }
 
-.artwork {
+.song-artwork {
   height: 100%;
 	float: left;
-	margin-right: 10px;
+	margin-right: 5px;
 }
 
-.song-artist {
+.song-artist.btn-flat {
+  display: inline-block;
   font-size: 8pt;
   color: #666;
 }
 
 .song-title {
+  padding-left: 4px;
   font-size: 10pt;
   color: #555;
+  text-transform: none;
 }
 
 .highlight .song-title {
@@ -122,3 +125,16 @@ body {
 body {
 	font-family: openSans;
 }
+
+
+.btn-flat {
+  text-transform: none;
+  display: block;
+  margin-bottom: 0px;
+  padding-left: 4px;
+  padding-right: 4px;
+  height: 20px;
+  line-height: 20px;
+}
+
+
