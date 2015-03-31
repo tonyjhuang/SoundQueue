@@ -1,16 +1,6 @@
 // the current song in the queue being played
+// need this to unhighlight the song when we switch to a new one.
 var currentIndex = -1;
-
-
-// length of the queue
-var queueLength;
-
-// song starts out unpaused
-var paused = false;
-
-// song starts out not in replay mode
-var replay = false;
-
 
 
 /*     UI      */
@@ -20,7 +10,6 @@ var _initializeQueue = function(queue) {
   if (queue) {
     currentIndex = queue.index;
     tracks = queue.tracks;
-    queueLength = tracks.length;
     for (i = 0; i < tracks.length; i++) {
 
       var callback =  function() {
@@ -87,8 +76,7 @@ function _appendToQueue(result, callback) {
 }
 
 
-// highlightes the current played song
-// TODO: if we add delete this needs to be changed to not use nth child
+// highlights the current played song
 function _highlightSong(index) {
   $(".song:nth-child(" + (index + 1) + ")").addClass("now-playing");
 }
@@ -102,6 +90,14 @@ function _showPlayButton(show) {
   var pauseDisplay = show ? "none" : "inline";
   $(".play").css("display", playDisplay);
   $(".pause").css("display", pauseDisplay);
+}
+
+function _updateReplayButton(replay) {
+  if (replay) {
+    $(".replay").css("background-color", "#D3D3D3");
+  } else {
+    $(".replay").css("background-color", "");
+  }
 }
 
 
@@ -123,26 +119,12 @@ function _clear() {
   _sendMediaMessage("clear", null, _initializeQueue);
 }
 
-function _updateReplayButton(replay) {
-	if (replay) {
-		$(".replay").css("background-color", "#D3D3D3");
-	} else {
-		$(".replay").css("background-color", "");
-	}
-}
-
 
 function _selectSong(_index) {
   _unhighlightSong(currentIndex);
   _sendMediaMessage("select", {index: _index}, _getNewCurrentIndex);
 }
 
-// Retrieves the new current index from
-// background page callback responses.
-function _getNewCurrentIndex(response) {
-  currentIndex = response.index;
-  _highlightSong(response.index);
-}
 
 $(function() {
 	// Lets background script know that popup is opened
@@ -194,9 +176,7 @@ $(function() {
 	});
 
 	$(".replay").click(function() {
-		_sendMediaMessage("replay", {replay: !replay}, function(response) {
-			console.log("is replay callback. response: " + response.replay);
-      replay = response.replay;
+		_sendMediaMessage("replay", null, function(response) {
 			_updateReplayButton(response.replay);
 		});
 	});
@@ -209,6 +189,7 @@ $(function() {
 });
 
 
+/* Use these helpers to send messages to the backend about user actions. */
 function _sendMediaMessage(type) {
   _sendMediaMessage(type, null);
 }

@@ -32,7 +32,10 @@ var widget;
 var addToQueue = function(url) {
   SC.get('http://api.soundcloud.com/resolve.json?url=' + url,
     function(result) {
-      console.log(result);
+      if(DEBUG) {
+        console.log(result);
+      }
+      
       if(result.kind == "track") { // single track
         queue["tracks"].push(result);
       } else { // playlist
@@ -132,7 +135,7 @@ function _handleMediaMessage(message, sender, sendResponse) {
       sendResponse({index: queue.index});
       break;
     case "replay":
-      queue.replay = message.options.replay;
+      queue.replay = !queue.replay;
       sendResponse({replay: queue.replay});
       break;
     case "shuffle":
