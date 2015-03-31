@@ -9,17 +9,9 @@ var _initializeQueue = function(queue) {
 
   if (queue) {
     currentIndex = queue.index;
-    tracks = queue.tracks;
-    for (i = 0; i < tracks.length; i++) {
-
-      var callback =  function() {
-        $($(".song")[i]).click(function(e) {
-          _selectSong($(this).index());
-        });
-      };
-
-      _appendToQueue(tracks[i], callback);
-    }
+    $.each(queue.tracks, function(index, track) {
+      _appendToQueue(track, index);
+    });
 
     _highlightSong(currentIndex);
     _updateReplayButton(queue.replay);
@@ -27,7 +19,7 @@ var _initializeQueue = function(queue) {
 }
 
 // add song row to queue
-function _appendToQueue(result, callback) {
+function _appendToQueue(track, index) {
 
   function _millisToTime(millis) {
     // see http://www.calculatorsoup.com/calculators/time/decimal-to-time-calculator.php
@@ -39,15 +31,15 @@ function _appendToQueue(result, callback) {
 
   var buttonClasses = "waves-effect waves-orange btn-flat"
 
-  console.log(result);
+  console.log(track);
 
-  var id = "track" + i;
-  var artwork = result.artwork_url;
-  var artist = result.user.username;
-  var artistLink = result.user.permalink_url;
-  var title = result.title;
-  var link = result.permalink_url;
-  var duration = _millisToTime(result.duration); // millis to minutes.
+  var id = "track" + index;
+  var artwork = track.artwork_url;
+  var artist = track.user.username;
+  var artistLink = track.user.permalink_url;
+  var title = track.title;
+  var link = track.permalink_url;
+  var duration = _millisToTime(track.duration); // millis to minutes.
 
 	var html ="\n" +
             "<div id='" + id + "' class='song valign-wrapper'>\n" +
@@ -62,17 +54,17 @@ function _appendToQueue(result, callback) {
 
   // artwork click listener, redirects user to sound page.
   $("#" + id + " .song-artwork").click(function(e) {
-    e.preventDefault();
     chrome.tabs.create({url: link});
   });
 
   // artist click listener, redirects user to artist page.
   $("#" + id + " .song-artist").click(function(e) {
-    e.preventDefault();
     chrome.tabs.create({url: artistLink});
   });
 
-	callback();
+  $("#" + id).click(function(e) {
+    _selectSong(index);
+  });
 }
 
 
@@ -122,7 +114,10 @@ function _clear() {
 
 function _selectSong(_index) {
   _unhighlightSong(currentIndex);
-  _sendMediaMessage("select", {index: _index}, _getNewCurrentIndex);
+  _sendMediaMessage("select", {index: _index}, function(response) {
+    currentIndex = response.index;
+    _highlightSong(response.index);
+  });
 }
 
 
