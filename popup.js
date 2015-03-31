@@ -1,6 +1,7 @@
 // the current song in the queue being played
 var currentIndex = -1;
 
+
 // length of the queue
 var queueLength;
 
@@ -10,20 +11,35 @@ var paused = false;
 // song starts out not in replay mode
 var replay = false;
 
-// highlightes the current played song
-// TODO: if we add delete this needs to be changed to not use nth child
-function _highlightSong(index) {
-	index++;
-	$(".song:nth-child(" + index + ")").addClass("now-playing");
-}
 
-function _unhighlightSong(index) {
-	index++;
-	$(".song:nth-child(" + index + ")").removeClass("now-playing");
+
+/*     UI      */
+var _initializeQueue = function(queue) {
+  $(".queue-container").empty();
+
+  if (queue) {
+    currentIndex = queue.index;
+    tracks = queue.tracks;
+    queueLength = tracks.length;
+    for (i = 0; i < tracks.length; i++) {
+
+      var callback =  function() {
+        $($(".song")[i]).click(function(e) {
+          _selectSong($(this).index());
+        });
+      };
+
+      _appendToQueue(tracks[i], callback);
+    }
+
+    _highlightSong(currentIndex);
+    _updateReplayButton(queue.replay);
+  }
 }
 
 // add song row to queue
 function _appendToQueue(result, callback) {
+
   function _millisToTime(millis) {
     // see http://www.calculatorsoup.com/calculators/time/decimal-to-time-calculator.php
     var minutesInDecimal = millis / 60000;
@@ -55,97 +71,95 @@ function _appendToQueue(result, callback) {
             "</div>\n";
 	$(".queue-container").append(html);
 
-  $("#" + id + " .song-artwork").click(function() {
-    chrome.tabs.create({
-     url: link
-    });
+  // artwork click listener, redirects user to sound page.
+  $("#" + id + " .song-artwork").click(function(e) {
+    e.preventDefault();
+    chrome.tabs.create({url: link});
   });
 
-  // artist click listener
-  $("#" + id + " .song-artist").click(function() {
-    chrome.tabs.create({
-     url: artistLink
-    });
+  // artist click listener, redirects user to artist page.
+  $("#" + id + " .song-artist").click(function(e) {
+    e.preventDefault();
+    chrome.tabs.create({url: artistLink});
   });
 
 	callback();
 }
 
-function _jumpToSong(index) {
-	chrome.runtime.sendMessage({index: index});
-	_unhighlightSong(currentIndex);
-	currentIndex = index;
-	_highlightSong(index);
+
+// highlightes the current played song
+// TODO: if we add delete this needs to be changed to not use nth child
+function _highlightSong(index) {
+  $(".song:nth-child(" + (index + 1) + ")").addClass("now-playing");
 }
 
+function _unhighlightSong(index) {
+  $(".song:nth-child(" + (index + 1) + ")").removeClass("now-playing");
+}
+
+function _showPlayButton(show) {
+  var playDisplay = show ? "inline" : "none";
+  var pauseDisplay = show ? "none" : "inline";
+  $(".play").css("display", playDisplay);
+  $(".pause").css("display", pauseDisplay);
+}
+
+
+/* Click Handlers. */
+
 function _pause() {
-	paused = !paused;
-	chrome.runtime.sendMessage({pause: paused});
-	$(".pause").css("display", "none");
-	$(".play").css("display", "inline");
+  _sendMediaMessage("pause");
+	_showPlayButton(true);
 }
 
 function _play() {
-	paused = !paused;
-	chrome.runtime.sendMessage({pause: paused});
-	$(".play").css("display", "none");
-	$(".pause").css("display", "inline");
+  _sendMediaMessage("play", null, function(response) {
+    _showPlayButton(!response.playing);
+  });
 }
 
 function _clear() {
-	chrome.runtime.sendMessage({clear: true});
-	_replay(false);
-	$(".queue-container").empty();
+  _pause();
+  _sendMediaMessage("clear", null, _initializeQueue);
 }
 
-function _replay(isEnabled) {
-	if (isEnabled) {
-		$(".replay").css("background-color", "#FFD1B2");
+function _updateReplayButton(replay) {
+	if (replay) {
+		$(".replay").css("background-color", "#D3D3D3");
 	} else {
 		$(".replay").css("background-color", "");
 	}
 }
 
-function _shuffle() {
-	$(".queue-container").empty();
-	chrome.runtime.sendMessage({shuffle: true},
-		_initializeQueue
-	);
+
+function _selectSong(_index) {
+  _unhighlightSong(currentIndex);
+  _sendMediaMessage("select", {index: _index}, _getNewCurrentIndex);
 }
 
-var _initializeQueue = function(response) {
-	if (response) {
-		currentIndex = response.index;
-		tracks = response.tracks;
-		queueLength = tracks.length;
-		for (i = 0; i < tracks.length; i++) {
-
-			var callback = 	function() {
-				$($(".song")[i]).click(function(e) {
-					_jumpToSong($(this).index());
-				});
-			};
-
-			_appendToQueue(tracks[i], callback);
-		}
-		_highlightSong(currentIndex);
-		_replay(response.replay);
-	}
+// Retrieves the new current index from
+// background page callback responses.
+function _getNewCurrentIndex(response) {
+  currentIndex = response.index;
+  _highlightSong(response.index);
 }
 
 $(function() {
 	// Lets background script know that popup is opened
 	// and gets the queue object as a response
-	chrome.runtime.sendMessage({visible: true},
+	chrome.runtime.sendMessage({
+      action: "NOTIFY",
+      visible: true
+    },
 		_initializeQueue
 	);
 
-	// listens for the next song if the previous song ends
+	// listens updates to the current song index.
 	chrome.runtime.onMessage.addListener(
 	  function(message, sender, sendResponse) {
-	  	if (message.nextSong) {
+	  	if ("updateCurrentIndex" in message) {
 		  	_unhighlightSong(currentIndex);
-				currentIndex = message.nextSong;
+				currentIndex = message.updateCurrentIndex;
 				_highlightSong(currentIndex);
 			}
 	  }
@@ -157,36 +171,56 @@ $(function() {
 
 	$(".play").click(function() {
 		_play();
-	})
+	});
 
 	$(".prev").click(function(e) {
-		if(currentIndex > 0) {
-			_jumpToSong(currentIndex - 1);
-		}
-	});
+    _unhighlightSong(currentIndex);
+    _sendMediaMessage("prev", null, function(response) {
+      currentIndex = response.index;
+      _highlightSong(response.index);
+	  });
+  });
 
 	$(".next").click(function(e) {
-		var queueModel = chrome.extension.getBackgroundPage().queue;
-		if (queueModel.replay) {
-			_jumpToSong(currentIndex);
-		} else if(currentIndex < queueLength - 1) {
-			_jumpToSong(currentIndex + 1);
-		}
-	});
+    _unhighlightSong(currentIndex);
+    _sendMediaMessage("next", null, function(response) {
+      currentIndex = response.index;
+      _highlightSong(response.index);
+    });
+  });
 
 	$(".clear").click(function() {
-		_pause();
 		_clear();
 	});
 
 	$(".replay").click(function() {
-		chrome.runtime.sendMessage({replay: true}, function(response) {
-			console.log("is replay callback");
-			_replay(response.replay);
+		_sendMediaMessage("replay", {replay: !replay}, function(response) {
+			console.log("is replay callback. response: " + response.replay);
+      replay = response.replay;
+			_updateReplayButton(response.replay);
 		});
 	});
 
 	$(".shuffle").click(function(e) {
-		_shuffle();
-	})
+    $(".queue-container").empty();
+    _sendMediaMessage("shuffle", {shuffle: true}, _initializeQueue);
+	});
+
 });
+
+
+function _sendMediaMessage(type) {
+  _sendMediaMessage(type, null);
+}
+
+function _sendMediaMessage(type, options) {
+  _sendMediaMessage(type, options, null);
+}
+
+function _sendMediaMessage(_type, _options, callback) {
+  chrome.runtime.sendMessage({
+    action: "MEDIA",
+    type: _type,
+    options: _options
+  }, callback);
+}

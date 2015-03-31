@@ -96,7 +96,10 @@ function _addQueueButtons() {
 
       $(queueButton).on("click", function() {
         toastr["success"]("Added song to queue.", "SoundQueue");
-        chrome.runtime.sendMessage({track: trackHref});
+        chrome.runtime.sendMessage({
+          action: "ADD_TO_QUEUE",
+          track: trackHref
+        });
       });
     }
   });
@@ -115,6 +118,8 @@ function _getTrackHrefForQueueButton(queueButton) {
   DOM before calling this function!
 */
 function _getTrackHrefForHoverQueueButton(queueButton) {
+  // Ugh fuck web dev. This feels awful but it's better than crawling through
+  // the whole DOM to find the right tag.
   return $(queueButton).parent().parent().parent().parent().parent().find(".soundTitle__title").attr("href");
 }
 
@@ -124,19 +129,3 @@ function _hasParentClass(element, clazz) {
 }
 
 addQueueButtons();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

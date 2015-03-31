@@ -1,3 +1,16 @@
+/*
+  Should control all logic around managing the queue and current playing
+  song.
+*/
+
+
+/* 
+Env variable to facilitate debugging. 
+
+PLEASE PLEASE PLEASE switch this to false when you're packing this for prod.
+*/
+var DEBUG = true;
+
 // Initialize Soundcloud SDK
 SC.initialize({
   client_id: "be1435461b3275ac389c9f47f61e2560"
@@ -10,22 +23,11 @@ var queue = {
     "tracks": [],
     "index": -1,
     "replay": false
-
 };
 
+// Our SoundCloud widget gets embedded on the persistent and
+// non-user facing background.html page. Controls sound streaming.
 var widget;
-
-var songDone = function() {
-  if (queue.replay) {
-    playSong(queue.index);
-  } else {
-    queue.index++;
-    if (queue.tracks.length != queue.index) {
-      playSong(queue.index);
-      chrome.runtime.sendMessage({"nextSong": queue.index});
-    }
-  }
-}
 
 var addToQueue = function(url) {
   SC.get('http://api.soundcloud.com/resolve.json?url=' + url,
@@ -35,82 +37,144 @@ var addToQueue = function(url) {
         queue["tracks"].push(result);
       } else { // playlist
         $.each(result.tracks, function(index) {
-          console.log(result.tracks[index]);
           queue["tracks"].push(result.tracks[index]);
         });
       }
 
       if (queue.index === -1) {
         queue.index = 0;
-        var currentSongUri = queue.tracks[queue.index].uri;
-        playSong(queue.index);
+        if(!DEBUG) { 
+          // Let's NOT autoplay the song on first add to avoid migraines.
+          playSong(queue.index);
+        }
       }
     }
   );
 }
 
 var playSong = function(index) {
-  var currentSongUri = queue.tracks[index].uri;
-  widget.load(currentSongUri, {
-    callback: function() {
-      widget.play();
-    }
-  });
+  if(index >= 0 && index < queue.tracks.length) {
+    var currentSongUri = queue.tracks[index].uri;
+    widget.load(currentSongUri, {
+      callback: function() {
+        widget.play();
+      }
+    });
+  } else {
+    widget.pause();
+  }
 }
 
-function shuffle(o){
+function randomizeArray(o){
     for(var j, x, i = o.length; i; j = Math.floor(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
     return o;
 };
 
-$(function() {
-  widget = SC.Widget("sc-widget");
 
-  widget.bind(SC.Widget.Events.FINISH, function() {
-    songDone();
-  });
 
-  // Listens to messages from content script and popup script
-  chrome.runtime.onMessage.addListener(
-    function(message, sender, sendResponse) {
-      // if given a track from content script, adds track to the queue
-      if (sender.tab && message.track === "CURRENT_URL") {
+var messageHandler = function(message, sender, sendResponse) {
+  console.log(message);
+  switch(message.action) {
+    case "ADD_TO_QUEUE":
+      if (message.track === "CURRENT_URL") {
         chrome.tabs.getSelected(null, function(tab) {
           addToQueue(tab.url);
         });
-      }
-      else if (sender.tab && ("track" in message)) {
+      } else {
         addToQueue("https://soundcloud.com" + message.track);
       }
-      // if signaled popup is open, send back queue object
-      else if (!sender.tab && message.visible) {
+      break;
+    case "NOTIFY":
+      if("visible" in message && message.visible) {
         sendResponse(queue);
       }
-      else if(!sender.tab && message.shuffle) {
-        queue.index = 0;
-        shuffle(queue.tracks);
-        sendResponse(queue);
+      break;
+    case "MEDIA":
+      _handleMediaMessage(message, sender, sendResponse);
+    default:
+      break;
+  }
+}
+
+
+function _handleMediaMessage(message, sender, sendResponse) {
+  switch(message.type) {
+    case "play":
+      console.log("play");
+      var validIndex = queue.index >= 0 && queue.index < queue.tracks.length;
+      if(validIndex) {
+        widget.play();
       }
-      else if (!sender.tab && "index" in message) {
-        queue.index = message.index;
-        playSong(queue.index);
-      }
-      else if (!sender.tab && "pause" in message) {
-        if (message.pause) {
-          widget.pause();
-        } else {
-          widget.play();
-        }
-      }
-      else if (!sender.tab && "clear" in message) {
-        queue.tracks = [];
-        queue.index = -1;
-        sendResponse(queue);
-      }
-      else if (!sender.tab && "replay" in message) {
-        queue.replay = !queue.replay;
-        sendResponse({replay: queue.replay});
-      }
+      sendResponse({playing: validIndex});
+      break;
+    case "pause":
+      console.log("pause");
+      widget.pause();
+      sendResponse({playing: false})
+      break;
+    case "prev":
+      console.log("current queue index: " + queue.index);
+      queue.index = Math.max(queue.index - 1, -1);
+      console.log("new queue index: " + queue.index);
+      playSong(queue.index);
+      sendResponse({index: queue.index});
+      break;
+    case "next":
+      console.log("current queue index: " + queue.index);
+      queue.index = Math.min(queue.index + 1, queue.tracks.length);
+      console.log("new queue index: " + queue.index);
+      playSong(queue.index);
+      sendResponse({index: queue.index});
+      break;
+    case "select":
+      queue.index = message.options.index;
+      playSong(queue.index)
+      sendResponse({index: queue.index});
+      break;
+    case "replay":
+      queue.replay = message.options.replay;
+      sendResponse({replay: queue.replay});
+      break;
+    case "shuffle":
+      queue.index = 0;
+      randomizeArray(queue.tracks);
+      sendResponse(queue);
+      break;
+    case "clear":
+      queue.tracks = [];
+      queue.index = -1;
+      sendResponse(queue);
+      break;
+  }
+}
+
+
+$(function() {
+  widget = SC.Widget("sc-widget");
+
+  // Listen for song finish event from the widget.
+  widget.bind(SC.Widget.Events.FINISH, function() {
+    if (queue.replay) {
+    playSong(queue.index);
+  } else {
+    queue.index++;
+    if (queue.index < queue.tracks.length) {
+      playSong(queue.index);
+      chrome.runtime.sendMessage({updateCurrentIndex: queue.index});
     }
-  );
+  }
+  });
+
+  if(DEBUG) {
+    addToQueue("https://soundcloud.com/mellomusicgroup/pete-rock-one-two-a-few-more-1");
+    addToQueue("https://soundcloud.com/wrgmag/whats-really-good-mix-series-vol18-by-deejay-theory");
+    addToQueue("http://soundcloud.com/iamgangus/drderggangus-old-chub");
+    addToQueue("http://soundcloud.com/alltrapmusic/buku-blur-1");
+    addToQueue("http://soundcloud.com/lidogotsongs/lido-canblaster-superspeed-1");
+    addToQueue("http://soundcloud.com/mrmarstoday/soulful-jawn");
+    addToQueue("http://soundcloud.com/mrmarstoday/dem-apples");
+  }
+
+  // Listens to messages from content script and popup script
+  chrome.runtime.onMessage.addListener(messageHandler);
 });
