@@ -24,19 +24,49 @@ function _unhighlightSong(index) {
 
 // add song row to queue
 function _appendToQueue(result, callback) {
+  function _millisToTime(millis) {
+    // see http://www.calculatorsoup.com/calculators/time/decimal-to-time-calculator.php
+    var minutesInDecimal = millis / 60000;
+    var secondsInDecimal = (minutesInDecimal % 1) * 60;
+
+    return Math.floor(minutesInDecimal) + ":" + Math.floor(secondsInDecimal);
+  }
+
+  var buttonClasses = "waves-effect waves-orange btn-flat"
+
+  console.log(result);
+
   var id = "track" + i;
   var artwork = result.artwork_url;
-  var artist = result.user.username
+  var artist = result.user.username;
+  var artistLink = result.user.permalink_url;
   var title = result.title;
+  var link = result.permalink_url;
+  var duration = _millisToTime(result.duration); // millis to minutes.
 
-	var html ="<div id='" + id + "' class='song valign-wrapper'>" +
-              "<img class='song-artwork' src='" + artwork + "'>" + 
-              "<div class='valign song-meta'>" +
-                "<p class='song-artist truncate waves-effect waves-orange btn-flat'>" + artist + "</p>" +
-                "<p class='song-title truncate'>" + title + "</p>" +
-              "</div>" + 
-            "</div>";
+	var html ="\n" +
+            "<div id='" + id + "' class='song valign-wrapper'>\n" +
+            "  <img class='song-artwork' src='" + artwork + "'>\n" + 
+            "  <div class='valign song-meta'>\n" +
+            "    <p class='song-artist truncate " + buttonClasses + "'>" + artist + "</p>\n" +
+            "    <p class='song-duration'>" + duration + "</p>\n" +
+            "    <p class='song-title truncate'>" + title + "</p>\n" +
+            "  </div>\n" + 
+            "</div>\n";
 	$(".queue-container").append(html);
+
+  $("#" + id + " .song-artwork").click(function() {
+    chrome.tabs.create({
+     url: link
+    });
+  });
+
+  // artist click listener
+  $("#" + id + " .song-artist").click(function() {
+    chrome.tabs.create({
+     url: artistLink
+    });
+  });
 
 	callback();
 }

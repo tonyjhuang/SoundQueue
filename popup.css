@@ -37,18 +37,19 @@ body {
   border-bottom: 1px solid #D3D3D3;
 }
 
-.song-meta {
-  margin-top: -10px;
-  width: 240px;
-}
-
 .song:hover {
   cursor: pointer;
   background-color: #FAFAFA;
 }
 
-.now-playing {
-  background-color: #FFF !important;
+.song-meta {
+  position: relative;
+  margin-top: -10px;
+  width: 100%;
+}
+
+.song.now-playing {
+  background-color: #FFF;
 }
 
 .song-artwork {
@@ -57,13 +58,25 @@ body {
 	margin-right: 5px;
 }
 
+.song-duration {
+  position: absolute;
+  top: 0;
+  right: 5px;
+  color: #999;
+  font-size: 8pt;
+  height: 20px;
+  line-height: 20px;
+}
+
 .song-artist.btn-flat {
   display: inline-block;
+  margin-right: 40px;
   font-size: 8pt;
   color: #666;
 }
 
 .song-title {
+  margin-right: 20px;
   padding-left: 4px;
   font-size: 10pt;
   color: #555;
