@@ -50,8 +50,7 @@ body {
 }
 
 .song-artwork {
-  height: 100%;
-	float: left;
+  width: 100px;
 	margin-right: 5px;
 }
 
