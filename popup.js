@@ -16,6 +16,7 @@ var _initializeState = function(state) {
     _highlightSong(currentIndex);
     _updateReplayButton(state.replay);
     _showPlayButton(!state.playing);
+    $(".volume").get(0).value=state.volume;
   }
 }
 

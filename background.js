@@ -20,10 +20,11 @@ SC.initialize({
 // tracks[0].title for song title
 // tracks[0].url for song url
 var state = {
-    "tracks": [],
-    "index": -1,
-    "replay": false,
-    "playing": false
+    tracks: [],
+    index: -1,
+    replay: false,
+    playing: false,
+    volume: 50
 };
 
 // Our SoundCloud widget gets embedded on the persistent and
@@ -85,7 +86,7 @@ var messageHandler = function(message, sender, sendResponse) {
   if(DEBUG) {
     console.log(message);
   }
-  
+
   switch(message.action) {
     case "ADD_TO_QUEUE":
       if (message.track === "CURRENT_URL") {
@@ -159,7 +160,8 @@ function _handleMediaMessage(message, sender, sendResponse) {
       sendResponse(state);
       break;
     case "volume":
-      widget.setVolume(message.options.volume);
+      state.volume = message.options.volume;
+      widget.setVolume(state.volume);
       break;
   }
 }
