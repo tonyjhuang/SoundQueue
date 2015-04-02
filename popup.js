@@ -188,8 +188,10 @@ $(function() {
     });
 	});
 
+  $(".volume").on("input", function() { 
+    _sendMediaMessage("volume", {volume: $(this).val()})
+  });
 });
-
 
 /* Use these helpers to send messages to the backend about user actions. */
 function _sendMediaMessage(type) {

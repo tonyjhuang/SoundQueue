@@ -141,10 +141,14 @@ body {
 }
 
 .media-player-right {
-  width: 100px;
+  padding-right: 10px;
   position: absolute;
   top: 6px;
   right: 0;
+}
+
+input[type=range].volume {
+  width: 100px;
 }
 
 .pause, .play, .prev, .next, .shuffle, .replay {

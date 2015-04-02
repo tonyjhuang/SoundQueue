@@ -82,7 +82,10 @@ function randomizeArray(o){
 
 
 var messageHandler = function(message, sender, sendResponse) {
-  console.log(message);
+  if(DEBUG) {
+    console.log(message);
+  }
+  
   switch(message.action) {
     case "ADD_TO_QUEUE":
       if (message.track === "CURRENT_URL") {
@@ -154,6 +157,9 @@ function _handleMediaMessage(message, sender, sendResponse) {
       state.tracks = [];
       state.index = -1;
       sendResponse(state);
+      break;
+    case "volume":
+      widget.setVolume(message.options.volume);
       break;
   }
 }
