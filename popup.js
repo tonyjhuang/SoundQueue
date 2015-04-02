@@ -99,7 +99,7 @@ function _updateReplayButton(replay) {
 
 function _pause() {
   _sendMediaMessage("pause");
-	_showPlayButton(true);
+  _showPlayButton(true);
 }
 
 function _play() {
@@ -136,9 +136,13 @@ $(function() {
 	// listens updates to the current song index.
 	chrome.runtime.onMessage.addListener(
 	  function(message, sender, sendResponse) {
-	  	_unhighlightSong(currentIndex);
-			currentIndex = message.index;
-			_highlightSong(currentIndex);
+      switch(message.action) {
+        case "NEXT_SONG":
+          _unhighlightSong(currentIndex);
+          currentIndex = message.state.index;
+          _highlightSong(currentIndex);
+          break;
+      }
 	  }
 	);
 

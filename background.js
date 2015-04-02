@@ -119,7 +119,6 @@ function _handleMediaMessage(message, sender, sendResponse) {
     case "pause":
       widget.pause();
       state.playing = false;
-      sendResponse(state)
       break;
     case "prev":
       state.index = Math.max(state.index - 1, -1);
@@ -166,14 +165,17 @@ $(function() {
   // Listen for song finish event from the widget.
   widget.bind(SC.Widget.Events.FINISH, function() {
     if (state.replay) {
-    playSong(state.index);
-  } else {
-    state.index++;
-    if (state.index < state.tracks.length) {
       playSong(state.index);
-      chrome.runtime.sendMessage(state);
+    } else {
+      state.index++;
+      if (state.index < state.tracks.length) {
+        playSong(state.index);
+        chrome.runtime.sendMessage({
+          action: "NEXT_SONG",
+          state: state
+        });
+      }
     }
-  }
   });
 
   if(DEBUG) {
