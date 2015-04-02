@@ -19,10 +19,11 @@ SC.initialize({
 // keeps track of all the tracks in the queue and the current song playing
 // tracks[0].title for song title
 // tracks[0].url for song url
-var queue = {
+var state = {
     "tracks": [],
     "index": -1,
-    "replay": false
+    "replay": false,
+    "playing": false
 };
 
 // Our SoundCloud widget gets embedded on the persistent and
@@ -35,35 +36,40 @@ var addToQueue = function(url) {
       if(DEBUG) {
         console.log(result);
       }
-      
+
       if(result.kind == "track") { // single track
-        queue["tracks"].push(result);
+        state["tracks"].push(result);
       } else { // playlist
         $.each(result.tracks, function(index) {
-          queue["tracks"].push(result.tracks[index]);
+          state["tracks"].push(result.tracks[index]);
         });
       }
 
-      if (queue.index === -1) {
-        queue.index = 0;
+      if (state.index === -1) {
+        state.index = 0;
         if(!DEBUG) { 
           // Let's NOT autoplay the song on first add to avoid migraines.
-          playSong(queue.index);
+          playSong(state.index);
+          state.playing = true;
         }
       }
     }
   );
 }
 
+// Plays the song at the index (if there is one),
+// updates the state appropriately.
 var playSong = function(index) {
-  if(index >= 0 && index < queue.tracks.length) {
-    var currentSongUri = queue.tracks[index].uri;
+  if(index >= 0 && index < state.tracks.length) {
+    state.playing = true; 
+    var currentSongUri = state.tracks[index].uri;
     widget.load(currentSongUri, {
       callback: function() {
         widget.play();
       }
     });
   } else {
+    state.playing = false;
     widget.pause();
   }
 }
@@ -88,8 +94,8 @@ var messageHandler = function(message, sender, sendResponse) {
       }
       break;
     case "NOTIFY":
-      if("visible" in message && message.visible) {
-        sendResponse(queue);
+      if("visible" in message && message.visible) {        
+        sendResponse(state);
       }
       break;
     case "MEDIA":
@@ -103,50 +109,52 @@ var messageHandler = function(message, sender, sendResponse) {
 function _handleMediaMessage(message, sender, sendResponse) {
   switch(message.type) {
     case "play":
-      console.log("play");
-      var validIndex = queue.index >= 0 && queue.index < queue.tracks.length;
+      var validIndex = state.index >= 0 && state.index < state.tracks.length;
       if(validIndex) {
         widget.play();
       }
-      sendResponse({playing: validIndex});
+      state.playing = validIndex;
+      sendResponse(state);
       break;
     case "pause":
-      console.log("pause");
       widget.pause();
-      sendResponse({playing: false})
+      state.playing = false;
+      sendResponse(state)
       break;
     case "prev":
-      console.log("current queue index: " + queue.index);
-      queue.index = Math.max(queue.index - 1, -1);
-      console.log("new queue index: " + queue.index);
-      playSong(queue.index);
-      sendResponse({index: queue.index});
+      state.index = Math.max(state.index - 1, -1);
+      playSong(state.index);
+      sendResponse(state);
       break;
     case "next":
-      console.log("current queue index: " + queue.index);
-      queue.index = Math.min(queue.index + 1, queue.tracks.length);
-      console.log("new queue index: " + queue.index);
-      playSong(queue.index);
-      sendResponse({index: queue.index});
+      state.index = Math.min(state.index + 1, state.tracks.length);
+      playSong(state.index);
+      sendResponse(state);
       break;
     case "select":
-      queue.index = message.options.index;
-      playSong(queue.index)
-      sendResponse({index: queue.index});
+      state.index = message.options.index;
+      playSong(state.index)
+      sendResponse(state);
       break;
     case "replay":
-      queue.replay = !queue.replay;
-      sendResponse({replay: queue.replay});
+      state.replay = !state.replay;
+      sendResponse(state);
       break;
     case "shuffle":
-      queue.index = 0;
-      randomizeArray(queue.tracks);
-      sendResponse(queue);
+      widget.pause();
+      state.playing = false;
+      if(state.tracks.length > 0) {
+        state.index = 0;
+        randomizeArray(state.tracks);
+      } else {
+        state.index = -1;
+      }
+      sendResponse(state);
       break;
     case "clear":
-      queue.tracks = [];
-      queue.index = -1;
-      sendResponse(queue);
+      state.tracks = [];
+      state.index = -1;
+      sendResponse(state);
       break;
   }
 }
@@ -157,13 +165,13 @@ $(function() {
 
   // Listen for song finish event from the widget.
   widget.bind(SC.Widget.Events.FINISH, function() {
-    if (queue.replay) {
-    playSong(queue.index);
+    if (state.replay) {
+    playSong(state.index);
   } else {
-    queue.index++;
-    if (queue.index < queue.tracks.length) {
-      playSong(queue.index);
-      chrome.runtime.sendMessage({updateCurrentIndex: queue.index});
+    state.index++;
+    if (state.index < state.tracks.length) {
+      playSong(state.index);
+      chrome.runtime.sendMessage(state);
     }
   }
   });

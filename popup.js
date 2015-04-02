@@ -4,17 +4,18 @@ var currentIndex = -1;
 
 
 /*     UI      */
-var _initializeQueue = function(queue) {
+var _initializeState = function(state) {
   $(".queue-container").empty();
 
-  if (queue) {
-    currentIndex = queue.index;
-    $.each(queue.tracks, function(index, track) {
+  if (state) {
+    currentIndex = state.index;
+    $.each(state.tracks, function(index, track) {
       _appendToQueue(track, index);
     });
 
     _highlightSong(currentIndex);
-    _updateReplayButton(queue.replay);
+    _updateReplayButton(state.replay);
+    _showPlayButton(!state.playing);
   }
 }
 
@@ -62,6 +63,7 @@ function _appendToQueue(track, index) {
     chrome.tabs.create({url: artistLink});
   });
 
+  // entire row click listener, selects the song to play immediately.
   $("#" + id).click(function(e) {
     _selectSong(index);
   });
@@ -86,7 +88,7 @@ function _showPlayButton(show) {
 
 function _updateReplayButton(replay) {
   if (replay) {
-    $(".replay").css("background-color", "#D3D3D3");
+    $(".replay").css("background-color", "#EEE");
   } else {
     $(".replay").css("background-color", "");
   }
@@ -108,7 +110,7 @@ function _play() {
 
 function _clear() {
   _pause();
-  _sendMediaMessage("clear", null, _initializeQueue);
+  _sendMediaMessage("clear", null, _initializeState);
 }
 
 
@@ -128,17 +130,15 @@ $(function() {
       action: "NOTIFY",
       visible: true
     },
-		_initializeQueue
+		_initializeState
 	);
 
 	// listens updates to the current song index.
 	chrome.runtime.onMessage.addListener(
 	  function(message, sender, sendResponse) {
-	  	if ("updateCurrentIndex" in message) {
-		  	_unhighlightSong(currentIndex);
-				currentIndex = message.updateCurrentIndex;
-				_highlightSong(currentIndex);
-			}
+	  	_unhighlightSong(currentIndex);
+			currentIndex = message.index;
+			_highlightSong(currentIndex);
 	  }
 	);
 
@@ -178,7 +178,10 @@ $(function() {
 
 	$(".shuffle").click(function(e) {
     $(".queue-container").empty();
-    _sendMediaMessage("shuffle", {shuffle: true}, _initializeQueue);
+    _sendMediaMessage("shuffle", null, function(result) {
+      _initializeState(result);
+      _showPlayButton(!result.playing);
+    });
 	});
 
 });
