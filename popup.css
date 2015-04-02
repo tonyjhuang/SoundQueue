@@ -72,6 +72,10 @@ body {
   color: #666;
 }
 
+.song-artist.btn-flat:hover {
+  background-color: #DDD;
+}
+
 .song-title {
   margin-right: 20px;
   padding-left: 4px;
