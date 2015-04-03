@@ -124,6 +124,10 @@ function _selectSong(_index) {
 }
 
 function _attachClickListeners() {
+  $(".soundcloud-link").click(function() {
+    chrome.tabs.create({url: "https://soundcloud.com"});
+  });
+
   $(".pause").click(function() {
     _pause();
   });
@@ -167,7 +171,7 @@ function _attachClickListeners() {
   });
 
   $(".volume").on("input", function() { 
-    _sendMediaMessage("volume", {volume: $(this).val()})
+    _sendMediaMessage("volume", {volume: parseInt($(this).val())})
   });
 }
 
@@ -187,12 +191,10 @@ $(function() {
       switch(message.action) {
         case "NOTIFY":
           if(message.type === "next-song") {
-            console.log("next-song");
             _unhighlightSong(currentIndex);
             currentIndex = message.state.index;
             _highlightSong(currentIndex);
           } else if(message.type === "svg-replace") {
-            console.log("svg-replace");
             _attachClickListeners();
           }
           break;

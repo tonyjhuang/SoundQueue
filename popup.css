@@ -9,6 +9,11 @@ body {
 	margin: 0;
 }
 
+/* Default color for all svgs */
+svg {
+  fill: #444;
+}
+
 .header {
   background-color: #FFF;
   border-bottom: 1px solid #D3D3D3;
@@ -19,6 +24,17 @@ body {
 }
 .header .title {
   margin: 0 auto;
+}
+
+.soundcloud-link {
+  fill: #ff8800;
+}
+
+.soundcloud-link, .clear{
+  cursor: pointer;
+  height: 32px;
+  width: 32px;
+  padding: 4px;
 }
 
 .queue-container {
@@ -87,10 +103,6 @@ body {
   color: #000;
 }
 
-.clear {
-	cursor: pointer;
-}
-
 .play {
 	display: none;
 }
@@ -122,10 +134,6 @@ body {
   left: -40px;
 }
 
-svg {
-    fill: #444;
-}
-
 input[type=range].volume {
   width: 56px;
 }
@@ -155,19 +163,14 @@ input[type=range].volume {
   right: 0;
 }
 
-/* VOLUME SLIDER COLOR */
-
-input[type=range] + .thumb, input[type=range]::-webkit-slider-thumb {
+/* VOLUME SLIDER COLOR AND SIZE */
+input[type=range]::-webkit-slider-thumb {
   background-color: #ff8800;
+  height: 12px;
+  width: 12px;
+  margin: -4px 0 0 0;
 }
 
-input[type=range] + .thumb .value {
-  color: #ff8800;
-}
-
-input[type=range]::-moz-range-thumb, input[type=range]::-ms-thumb {
-  background: #ff8800;
-}
 
 .pause, .play, .prev, .next, .shuffle, .replay {
 	cursor: pointer;
@@ -193,5 +196,17 @@ body {
   height: 20px;
   line-height: 20px;
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
