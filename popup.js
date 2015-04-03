@@ -3,6 +3,10 @@
 var currentIndex = -1;
 
 
+function _getNowPlaying(state) {
+  return state.tracks[state.index];
+}
+
 /*     UI      */
 var _initializeState = function(state) {
   $(".queue-container").empty();
@@ -18,8 +22,7 @@ var _initializeState = function(state) {
     _updateReplayButton(state.replay);
     _showPlayButton(!state.playing);
     $(".volume").get(0).value = state.volume;
-    _updateSeekerDuration(state.tracks[currentIndex]);
-    _updateSeekerCurrentPosition(0, state.tracks[currentIndex].duration)
+    _updateSeeker(state.currentPosition, _getNowPlaying(state).duration)
   }
 }
 
@@ -116,17 +119,12 @@ function _resetSeeker() {
 }
 
 // each param is in millis.
-function _updateSeekerCurrentPosition(currentPosition, trackDuration) {
+function _updateSeeker(currentPosition, trackDuration) {
   var percentage = Math.floor(currentPosition / trackDuration * 100);
   $(".seeker-current-position").html(_millisToTime(currentPosition));
+  $(".seeker-total-duration").html(_millisToTime(trackDuration));
   $(".seeker")[0].value = percentage;
 }
-
-function _updateSeekerDuration(track) {
-  var duration = _millisToTime(track.duration);
-  $(".seeker-total-duration").html(duration);
-}
-
 
 /* Click Handlers. */
 
@@ -169,17 +167,17 @@ function _attachClickListeners() {
 
   $(".prev").click(function(e) {
     _unhighlightSong(currentIndex);
-    _sendMediaMessage("prev", null, function(response) {
-      currentIndex = response.index;
-      _highlightSong(response.index);
+    _sendMediaMessage("prev", null, function(state) {
+      currentIndex = state.index;
+      _highlightSong(state.index);
     });
   });
 
   $(".next").click(function(e) {
     _unhighlightSong(currentIndex);
-    _sendMediaMessage("next", null, function(response) {
-      currentIndex = response.index;
-      _highlightSong(response.index);
+    _sendMediaMessage("next", null, function(state) {
+      currentIndex = state.index;
+      _highlightSong(state.index);
     });
   });
 
@@ -188,16 +186,16 @@ function _attachClickListeners() {
   });
 
   $(".replay").click(function() {
-    _sendMediaMessage("replay", null, function(response) {
-      _updateReplayButton(response.replay);
+    _sendMediaMessage("replay", null, function(state) {
+      _updateReplayButton(state.replay);
     });
   });
 
   $(".shuffle").click(function(e) {
     $(".queue-container").empty();
-    _sendMediaMessage("shuffle", null, function(result) {
-      _initializeState(result);
-      _showPlayButton(!result.playing);
+    _sendMediaMessage("shuffle", null, function(state) {
+      _initializeState(state);
+      _showPlayButton(!state.playing);
     });
   });
 
@@ -213,20 +211,20 @@ function _attachClickListeners() {
 function _handleNotifyMessage(message, sender, sendResponse) {
   switch(message.type) {
     case "next-song":
+      console.log("next-song");
       var state = message.state;
       _unhighlightSong(currentIndex);
       currentIndex = state.index;
       _highlightSong(currentIndex);
-
-      _resetSeeker();
-      _updateSeekerDuration(state.track);
+      console.log(state);
+      _updateSeeker(0, _getNowPlaying(state).duration);
       break;
     case "svg-replace":
       _attachClickListeners();
       break;
     case "song-progress":
-      _updateSeekerDuration(message.options.track);
-      _updateSeekerCurrentPosition(message.options.currentPosition, message.options.track.duration);
+      var state = message.state;
+      _updateSeeker(state.currentPosition, _getNowPlaying(state).duration);
       break;
   }
 }

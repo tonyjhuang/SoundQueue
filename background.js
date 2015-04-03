@@ -24,7 +24,8 @@ var state = {
     index: -1,
     replay: false,
     playing: false,
-    volume: 50
+    volume: 50,
+    currentPosition: 0
 };
 
 // Our SoundCloud widget gets embedded on the persistent and
@@ -130,16 +131,19 @@ function _handleMediaMessage(message, sender, sendResponse) {
       state.index = Math.max(state.index - 1, -1);
       playSong(state.index);
       sendResponse(state);
+      _notifyNextSong();
       break;
     case "next":
       state.index = Math.min(state.index + 1, state.tracks.length);
       playSong(state.index);
       sendResponse(state);
+      _notifyNextSong();
       break;
     case "select":
       state.index = message.options.index;
       playSong(state.index)
       sendResponse(state);
+      _notifyNextSong();
       break;
     case "replay":
       state.replay = !state.replay;
@@ -197,6 +201,7 @@ $(function() {
 
   // Listen for song finish event from the widget.
   widget.bind(SC.Widget.Events.FINISH, function() {
+    state.currentPosition = 0;
     if (state.replay) {
       playSong(state.index);
     } else {
@@ -209,13 +214,11 @@ $(function() {
   });
 
   widget.bind(SC.Widget.Events.PLAY_PROGRESS, _throttle(function(progress) {
+    state.currentPosition = progress.currentPosition;
     chrome.runtime.sendMessage({
       action: "NOTIFY",
       type: "song-progress",
-      options: {
-        track: state.tracks[state.index],
-        currentPosition: progress.currentPosition  
-      }
+      state: state
     });
   }, 250));
 
