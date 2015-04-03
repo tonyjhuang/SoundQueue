@@ -6,6 +6,7 @@ var currentIndex = -1;
 /*     UI      */
 var _initializeState = function(state) {
   $(".queue-container").empty();
+  _resetSeeker();
 
   if (state) {
     currentIndex = state.index;
@@ -16,21 +17,34 @@ var _initializeState = function(state) {
     _highlightSong(currentIndex);
     _updateReplayButton(state.replay);
     _showPlayButton(!state.playing);
-    $(".volume").get(0).value=state.volume;
+    $(".volume").get(0).value = state.volume;
+    _updateSeekerDuration(state.tracks[currentIndex]);
+    _updateSeekerCurrentPosition(0, state.tracks[currentIndex].duration)
   }
+}
+
+
+function _millisToTime(millis) {
+  // see http://stackoverflow.com/a/1268377
+  function zeroPad(num, numZeros) {
+    var n = Math.abs(num);
+    var zeros = Math.max(0, numZeros - Math.floor(n).toString().length );
+    var zeroString = Math.pow(10,zeros).toString().substr(1);
+    if( num < 0 ) {
+        zeroString = '-' + zeroString;
+    }
+
+    return zeroString+n;
+  }
+  // see http://www.calculatorsoup.com/calculators/time/decimal-to-time-calculator.php
+  var minutesInDecimal = millis / 60000;
+  var secondsInDecimal = (minutesInDecimal % 1) * 60;
+
+  return Math.floor(minutesInDecimal) + ":" + zeroPad(Math.floor(secondsInDecimal), 2);
 }
 
 // add song row to queue
 function _appendToQueue(track, index) {
-
-  function _millisToTime(millis) {
-    // see http://www.calculatorsoup.com/calculators/time/decimal-to-time-calculator.php
-    var minutesInDecimal = millis / 60000;
-    var secondsInDecimal = (minutesInDecimal % 1) * 60;
-
-    return Math.floor(minutesInDecimal) + ":" + Math.floor(secondsInDecimal);
-  }
-
   var buttonClasses = "waves-effect waves-orange btn-flat"
 
   //console.log(track);
@@ -95,6 +109,24 @@ function _updateReplayButton(replay) {
   }
 }
 
+function _resetSeeker() {
+  $(".seeker-current-position").html("0:00");
+  $(".seeker-total-duration").html("0:00");
+  $(".seeker")[0].value = 0;
+}
+
+// each param is in millis.
+function _updateSeekerCurrentPosition(currentPosition, trackDuration) {
+  var percentage = Math.floor(currentPosition / trackDuration * 100);
+  $(".seeker-current-position").html(_millisToTime(currentPosition));
+  $(".seeker")[0].value = percentage;
+}
+
+function _updateSeekerDuration(track) {
+  var duration = _millisToTime(track.duration);
+  $(".seeker-total-duration").html(duration);
+}
+
 
 /* Click Handlers. */
 
@@ -113,7 +145,6 @@ function _clear() {
   _pause();
   _sendMediaMessage("clear", null, _initializeState);
 }
-
 
 function _selectSong(_index) {
   _unhighlightSong(currentIndex);
@@ -173,14 +204,41 @@ function _attachClickListeners() {
   $(".volume").on("input", function() { 
     _sendMediaMessage("volume", {volume: parseInt($(this).val())})
   });
+
+  $(".seeker").on("input", function() { 
+    console.log($(this).val());
+  });
 }
+
+function _handleNotifyMessage(message, sender, sendResponse) {
+  switch(message.type) {
+    case "next-song":
+      var state = message.state;
+      _unhighlightSong(currentIndex);
+      currentIndex = state.index;
+      _highlightSong(currentIndex);
+
+      _resetSeeker();
+      _updateSeekerDuration(state.track);
+      break;
+    case "svg-replace":
+      _attachClickListeners();
+      break;
+    case "song-progress":
+      _updateSeekerDuration(message.options.track);
+      _updateSeekerCurrentPosition(message.options.currentPosition, message.options.track.duration);
+      break;
+  }
+}
+
+var seeker;
 
 $(function() {
 	// Lets background script know that popup is opened
 	// and gets the queue object as a response
 	chrome.runtime.sendMessage({
       action: "NOTIFY",
-      visible: true
+      type: "visible"
     },
 		_initializeState
 	);
@@ -190,17 +248,11 @@ $(function() {
 	  function(message, sender, sendResponse) {
       switch(message.action) {
         case "NOTIFY":
-          if(message.type === "next-song") {
-            _unhighlightSong(currentIndex);
-            currentIndex = message.state.index;
-            _highlightSong(currentIndex);
-          } else if(message.type === "svg-replace") {
-            _attachClickListeners();
-          }
+          _handleNotifyMessage(message, sender, sendResponse);
           break;
       }
 	  }
-	);
+  );
 
   _attachClickListeners();
 });

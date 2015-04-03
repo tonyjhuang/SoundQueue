@@ -62,11 +62,13 @@ var addToQueue = function(url) {
 // updates the state appropriately.
 var playSong = function(index) {
   if(index >= 0 && index < state.tracks.length) {
-    state.playing = true; 
     var currentSongUri = state.tracks[index].uri;
     widget.load(currentSongUri, {
       callback: function() {
-        widget.play();
+        if(state.playing) {
+          widget.play();
+        }
+        widget.setVolume(state.volume);
       }
     });
   } else {
@@ -84,7 +86,7 @@ function randomizeArray(o){
 
 var messageHandler = function(message, sender, sendResponse) {
   if(DEBUG) {
-    console.log(message);
+    //console.log(message);
   }
 
   switch(message.action) {
@@ -98,7 +100,7 @@ var messageHandler = function(message, sender, sendResponse) {
       }
       break;
     case "NOTIFY":
-      if(message.type = "visible") {        
+      if(message.type === "visible") {        
         sendResponse(state);
       }
       break;
@@ -168,6 +170,29 @@ function _handleMediaMessage(message, sender, sendResponse) {
 
 
 $(function() {
+  function _throttle(fn, threshhold, scope) {
+    threshhold || (threshhold = 250);
+    var last,
+        deferTimer;
+    return function () {
+      var context = scope || this;
+
+      var now = +new Date,
+          args = arguments;
+      if (last && now < last + threshhold) {
+        // hold on to it
+        clearTimeout(deferTimer);
+        deferTimer = setTimeout(function () {
+          last = now;
+          fn.apply(context, args);
+        }, threshhold);
+      } else {
+        last = now;
+        fn.apply(context, args);
+      }
+    };
+  }
+
   widget = SC.Widget("sc-widget");
 
   // Listen for song finish event from the widget.
@@ -178,14 +203,21 @@ $(function() {
       state.index++;
       if (state.index < state.tracks.length) {
         playSong(state.index);
-        chrome.runtime.sendMessage({
-          action: "NOTIFY",
-          type: "next-song",
-          state: state
-        });
+        _notifyNextSong();
       }
     }
   });
+
+  widget.bind(SC.Widget.Events.PLAY_PROGRESS, _throttle(function(progress) {
+    chrome.runtime.sendMessage({
+      action: "NOTIFY",
+      type: "song-progress",
+      options: {
+        track: state.tracks[state.index],
+        currentPosition: progress.currentPosition  
+      }
+    });
+  }, 250));
 
   if(DEBUG) {
     addToQueue("https://soundcloud.com/mellomusicgroup/pete-rock-one-two-a-few-more-1");
@@ -200,3 +232,11 @@ $(function() {
   // Listens to messages from content script and popup script
   chrome.runtime.onMessage.addListener(messageHandler);
 });
+
+function _notifyNextSong() {
+  chrome.runtime.sendMessage({
+    action: "NOTIFY",
+    type: "next-song",
+    state: state
+  });
+}

@@ -14,6 +14,30 @@ svg {
   fill: #444;
 }
 
+@font-face {
+  font-family: openSans;
+  src: url(assets/Open_Sans/OpenSans-Regular.ttf);
+}
+
+body {
+  font-family: openSans;
+}
+
+.btn-flat {
+  text-transform: none;
+  display: block;
+  margin-bottom: 0px;
+  padding-left: 4px;
+  padding-right: 4px;
+  height: 20px;
+  line-height: 20px;
+}
+
+ 
+/**************/ 
+/*   HEADER   */
+/**************/ 
+
 .header {
   background-color: #FFF;
   border-bottom: 1px solid #D3D3D3;
@@ -36,6 +60,11 @@ svg {
   width: 32px;
   padding: 4px;
 }
+
+
+/**************/ 
+/*   QUEUE    */
+/**************/ 
 
 .queue-container {
   background-color: #EEE;
@@ -103,6 +132,69 @@ svg {
   color: #000;
 }
 
+
+/**************/ 
+/*   PLAYER   */
+/**************/ 
+
+.media-player {
+  border-top: 1px solid #D3D3D3;
+  background-color: #FFF;
+  width: 100%;
+  text-align: center;
+  position: relative;
+}
+
+.media-player-middle {
+  margin: 0 auto;
+  display: inline;
+}
+
+.media-player-left {
+  position: absolute;
+  margin-right: auto;
+}
+
+.media-player-right {
+  padding-right: 10px;
+  position: absolute;
+  top: 6px;
+  right: 0;
+}
+
+.seeker-container {
+  z-index: 10;
+  position: relative;
+}
+
+.seeker-current-position, .seeker-total-duration {
+  position: absolute;
+  font-size: 8pt;
+  z-index: 10;
+  top: -11px;
+  background-color: #FFF;
+  padding: 0 2px;
+  color: #999;
+}
+
+.seeker-current-position {
+  left: 0px;
+}
+
+.seeker-total-duration {
+  right: 0px;
+}
+
+
+input[type=range].seeker {
+  top: -3px;
+  left: 25px;
+  padding: 0px;
+  margin-top: 0px;
+  width: 350px;
+  position: absolute;
+}
+
 .play {
 	display: none;
 }
@@ -138,30 +230,6 @@ input[type=range].volume {
   width: 56px;
 }
 
-.media-player {
-  border-top: 1px solid #D3D3D3;
-  background-color: #FFF;
-  width: 100%;
-  text-align: center;
-  position: relative;
-}
-
-.media-player-middle {
-  margin: 0 auto;
-  display: inline;
-}
-
-.media-player-left {
-  position: absolute;
-  margin-right: auto;
-}
-
-.media-player-right {
-  padding-right: 10px;
-  position: absolute;
-  top: 6px;
-  right: 0;
-}
 
 /* VOLUME SLIDER COLOR AND SIZE */
 input[type=range]::-webkit-slider-thumb {
@@ -176,27 +244,6 @@ input[type=range]::-webkit-slider-thumb {
 	cursor: pointer;
 	vertical-align:middle;
 }
-
-@font-face {
-	font-family: openSans;
-	src: url(assets/Open_Sans/OpenSans-Regular.ttf);
-}
-
-body {
-	font-family: openSans;
-}
-
-
-.btn-flat {
-  text-transform: none;
-  display: block;
-  margin-bottom: 0px;
-  padding-left: 4px;
-  padding-right: 4px;
-  height: 20px;
-  line-height: 20px;
-}
-
 
 
 
