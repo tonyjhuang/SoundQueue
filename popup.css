@@ -232,11 +232,15 @@ input[type=range].volume {
 
 
 /* VOLUME SLIDER COLOR AND SIZE */
+input[type=range].seeker::-webkit-slider-thumb {
+  margin-top: -7px;
+  height: 16px;
+  width: 16px;
+}
 input[type=range]::-webkit-slider-thumb {
-  background-color: #ff8800;
+  background-color: rgba(255, 136, 0, 0.9);
   height: 12px;
   width: 12px;
-  margin: -4px 0 0 0;
 }
 
 
