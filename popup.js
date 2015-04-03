@@ -33,7 +33,7 @@ function _appendToQueue(track, index) {
 
   var buttonClasses = "waves-effect waves-orange btn-flat"
 
-  console.log(track);
+  //console.log(track);
 
   var id = "track" + index;
   var artwork = track.artwork_url;
@@ -123,6 +123,53 @@ function _selectSong(_index) {
   });
 }
 
+function _attachClickListeners() {
+  $(".pause").click(function() {
+    _pause();
+  });
+
+  $(".play").click(function() {
+    _play();
+  });
+
+  $(".prev").click(function(e) {
+    _unhighlightSong(currentIndex);
+    _sendMediaMessage("prev", null, function(response) {
+      currentIndex = response.index;
+      _highlightSong(response.index);
+    });
+  });
+
+  $(".next").click(function(e) {
+    _unhighlightSong(currentIndex);
+    _sendMediaMessage("next", null, function(response) {
+      currentIndex = response.index;
+      _highlightSong(response.index);
+    });
+  });
+
+  $(".clear").click(function() {
+    _clear();
+  });
+
+  $(".replay").click(function() {
+    _sendMediaMessage("replay", null, function(response) {
+      _updateReplayButton(response.replay);
+    });
+  });
+
+  $(".shuffle").click(function(e) {
+    $(".queue-container").empty();
+    _sendMediaMessage("shuffle", null, function(result) {
+      _initializeState(result);
+      _showPlayButton(!result.playing);
+    });
+  });
+
+  $(".volume").on("input", function() { 
+    _sendMediaMessage("volume", {volume: $(this).val()})
+  });
+}
 
 $(function() {
 	// Lets background script know that popup is opened
@@ -138,60 +185,22 @@ $(function() {
 	chrome.runtime.onMessage.addListener(
 	  function(message, sender, sendResponse) {
       switch(message.action) {
-        case "NEXT_SONG":
-          _unhighlightSong(currentIndex);
-          currentIndex = message.state.index;
-          _highlightSong(currentIndex);
+        case "NOTIFY":
+          if(message.type === "next-song") {
+            console.log("next-song");
+            _unhighlightSong(currentIndex);
+            currentIndex = message.state.index;
+            _highlightSong(currentIndex);
+          } else if(message.type === "svg-replace") {
+            console.log("svg-replace");
+            _attachClickListeners();
+          }
           break;
       }
 	  }
 	);
 
-	$(".pause").click(function() {
-		_pause();
-	});
-
-	$(".play").click(function() {
-		_play();
-	});
-
-	$(".prev").click(function(e) {
-    _unhighlightSong(currentIndex);
-    _sendMediaMessage("prev", null, function(response) {
-      currentIndex = response.index;
-      _highlightSong(response.index);
-	  });
-  });
-
-	$(".next").click(function(e) {
-    _unhighlightSong(currentIndex);
-    _sendMediaMessage("next", null, function(response) {
-      currentIndex = response.index;
-      _highlightSong(response.index);
-    });
-  });
-
-	$(".clear").click(function() {
-		_clear();
-	});
-
-	$(".replay").click(function() {
-		_sendMediaMessage("replay", null, function(response) {
-			_updateReplayButton(response.replay);
-		});
-	});
-
-	$(".shuffle").click(function(e) {
-    $(".queue-container").empty();
-    _sendMediaMessage("shuffle", null, function(result) {
-      _initializeState(result);
-      _showPlayButton(!result.playing);
-    });
-	});
-
-  $(".volume").on("input", function() { 
-    _sendMediaMessage("volume", {volume: $(this).val()})
-  });
+  _attachClickListeners();
 });
 
 /* Use these helpers to send messages to the backend about user actions. */
@@ -203,10 +212,10 @@ function _sendMediaMessage(type, options) {
   _sendMediaMessage(type, options, null);
 }
 
-function _sendMediaMessage(_type, _options, callback) {
+function _sendMediaMessage(type, options, callback) {
   chrome.runtime.sendMessage({
     action: "MEDIA",
-    type: _type,
-    options: _options
+    type: type,
+    options: options
   }, callback);
 }

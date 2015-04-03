@@ -98,7 +98,7 @@ var messageHandler = function(message, sender, sendResponse) {
       }
       break;
     case "NOTIFY":
-      if("visible" in message && message.visible) {        
+      if(message.type = "visible") {        
         sendResponse(state);
       }
       break;
@@ -179,7 +179,8 @@ $(function() {
       if (state.index < state.tracks.length) {
         playSong(state.index);
         chrome.runtime.sendMessage({
-          action: "NEXT_SONG",
+          action: "NOTIFY",
+          type: "next-song",
           state: state
         });
       }

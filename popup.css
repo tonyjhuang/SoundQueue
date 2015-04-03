@@ -110,16 +110,24 @@ body {
 	width: 48px;
 }
 
-.shuffle {
-}
-
-.replay {
-}
-
-.shuffle, .replay {
-  padding: 0px 15px;
+.shuffle, .replay, .volume-icon {
+  padding: 0px 14px;
 	height: 48px;
 	width: 48px;
+}
+
+.volume-icon {
+  position: absolute;
+  top: -6.5px;
+  left: -40px;
+}
+
+svg {
+    fill: #444;
+}
+
+input[type=range].volume {
+  width: 56px;
 }
 
 .media-player {
@@ -147,8 +155,18 @@ body {
   right: 0;
 }
 
-input[type=range].volume {
-  width: 100px;
+/* VOLUME SLIDER COLOR */
+
+input[type=range] + .thumb, input[type=range]::-webkit-slider-thumb {
+  background-color: #ff8800;
+}
+
+input[type=range] + .thumb .value {
+  color: #ff8800;
+}
+
+input[type=range]::-moz-range-thumb, input[type=range]::-ms-thumb {
+  background: #ff8800;
 }
 
 .pause, .play, .prev, .next, .shuffle, .replay {
