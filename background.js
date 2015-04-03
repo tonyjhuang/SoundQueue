@@ -60,19 +60,60 @@ var addToQueue = function(url) {
 }
 
 // Plays the song at the index (if there is one),
-// updates the state appropriately.
-var playSong = function(index) {
+// updates the state appropriately. if respectCurrentPlayState
+// is set to true, only play the widget if the current state
+// is already playing.
+var playSong = function(index, respectCurrentPlayState) {
   if(index >= 0 && index < state.tracks.length) {
-    var currentSongUri = state.tracks[index].uri;
-    widget.load(currentSongUri, {
-      callback: function() {
-        if(state.playing) {
-          widget.play();
-        }
-        widget.setVolume(state.volume);
+    
+    if(!respectCurrentPlayState) {
+      state.playing = true;
+    }
+
+    if(state.index === index) {
+      // in case the user has paused the song and then seeked
+      // to a new position.
+      widget.seekTo(state.currentPosition);
+      if(state.playing) {
+        widget.play();
       }
-    });
-  } else {
+    } else {
+      state.index = index;
+      var currentSongUri = state.tracks[index].uri;
+      widget.load(currentSongUri, {
+        callback: function() {
+          widget.setVolume(state.volume);
+          if(state.playing) {
+            widget.play();
+          } else {
+            /*
+             Seems to be a bug in the SoundCloud widget. 
+
+             To reproduce:
+             - add songs to queue.
+             - pause playback.
+             - select/click any song that isn't currently playing
+             - seek to a time in the song
+             - play song
+
+             Expected behavior:
+             - widget starts playing the song at that seeked to position
+
+             Actual behavior:
+             - widget starts playing the song from the beginning
+
+             Workaround:
+             - 'prime' the widget by playing and then immediately pausing. 
+             - when the widget is next played, it will respect prior seekTo's
+
+             */
+            widget.play();
+            widget.pause();
+          }
+        }
+      });
+    }
+  } else { // invalid index.
     state.playing = false;
     widget.pause();
   }
@@ -82,8 +123,6 @@ function randomizeArray(o){
     for(var j, x, i = o.length; i; j = Math.floor(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
     return o;
 };
-
-
 
 var messageHandler = function(message, sender, sendResponse) {
   if(DEBUG) {
@@ -116,11 +155,7 @@ var messageHandler = function(message, sender, sendResponse) {
 function _handleMediaMessage(message, sender, sendResponse) {
   switch(message.type) {
     case "play":
-      var validIndex = state.index >= 0 && state.index < state.tracks.length;
-      if(validIndex) {
-        widget.play();
-      }
-      state.playing = validIndex;
+      playSong(state.index, false);
       sendResponse(state);
       break;
     case "pause":
@@ -128,20 +163,21 @@ function _handleMediaMessage(message, sender, sendResponse) {
       state.playing = false;
       break;
     case "prev":
-      state.index = Math.max(state.index - 1, -1);
-      playSong(state.index);
+      state.currentPosition = 0;
+      playSong(Math.max(state.index - 1, -1), true);
       sendResponse(state);
       _notifyNextSong();
       break;
     case "next":
-      state.index = Math.min(state.index + 1, state.tracks.length);
-      playSong(state.index);
+      state.currentPosition = 0;
+      playSong(Math.min(state.index + 1, state.tracks.length), true);
       sendResponse(state);
       _notifyNextSong();
       break;
     case "select":
-      state.index = message.options.index;
-      playSong(state.index)
+      ignoreNextPlayProgressEvent = true; // see variable declaration comment.
+      state.currentPosition = 0;
+      playSong(message.options.index, true)
       sendResponse(state);
       _notifyNextSong();
       break;
@@ -150,6 +186,7 @@ function _handleMediaMessage(message, sender, sendResponse) {
       sendResponse(state);
       break;
     case "shuffle":
+      state.currentPosition = 0;
       widget.pause();
       state.playing = false;
       if(state.tracks.length > 0) {
@@ -163,40 +200,56 @@ function _handleMediaMessage(message, sender, sendResponse) {
     case "clear":
       state.tracks = [];
       state.index = -1;
+      state.playing = false;
+      state.currentPosition = 0;
       sendResponse(state);
       break;
     case "volume":
       state.volume = message.options.volume;
       widget.setVolume(state.volume);
       break;
+    case "seek":
+      state.currentPosition = message.options.seek / 1000 * state.tracks[state.index].duration;
+      widget.seekTo(state.currentPosition);
+      sendResponse(state);
+      break;
   }
 }
 
 
-$(function() {
-  function _throttle(fn, threshhold, scope) {
-    threshhold || (threshhold = 250);
-    var last,
-        deferTimer;
-    return function () {
-      var context = scope || this;
+function _throttle(fn, threshhold, scope) {
+  threshhold || (threshhold = 250);
+  var last,
+      deferTimer;
+  return function () {
+    var context = scope || this;
 
-      var now = +new Date,
-          args = arguments;
-      if (last && now < last + threshhold) {
-        // hold on to it
-        clearTimeout(deferTimer);
-        deferTimer = setTimeout(function () {
-          last = now;
-          fn.apply(context, args);
-        }, threshhold);
-      } else {
+    var now = +new Date,
+        args = arguments;
+    if (last && now < last + threshhold) {
+      // hold on to it
+      clearTimeout(deferTimer);
+      deferTimer = setTimeout(function () {
         last = now;
         fn.apply(context, args);
-      }
-    };
-  }
+      }, threshhold);
+    } else {
+      last = now;
+      fn.apply(context, args);
+    }
+  };
+}
 
+// So there's an issue with picking a track to play while another song
+// is already playing: after selecting the new song, the widget has to
+// pause, and in doing so, fires off one last play-progress event. in
+// order to avoid ping-ponging currentPosition events (user selects new
+// song, currentPosition is at 0, widget fires event, currentPosition
+// is back to 63253.23 or whatever), we ignore the next play-progress
+// event.
+var ignoreNextPlayProgressEvent = false;
+
+$(function() {
   widget = SC.Widget("sc-widget");
 
   // Listen for song finish event from the widget.
@@ -214,13 +267,17 @@ $(function() {
   });
 
   widget.bind(SC.Widget.Events.PLAY_PROGRESS, _throttle(function(progress) {
+    if(ignoreNextPlayProgressEvent) {
+      ignoreNextPlayProgressEvent = false;
+      return;
+    }
     state.currentPosition = progress.currentPosition;
     chrome.runtime.sendMessage({
       action: "NOTIFY",
       type: "song-progress",
       state: state
     });
-  }, 250));
+  }, 100));
 
   if(DEBUG) {
     addToQueue("https://soundcloud.com/mellomusicgroup/pete-rock-one-two-a-few-more-1");
