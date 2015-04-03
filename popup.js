@@ -120,10 +120,10 @@ function _resetSeeker() {
 
 // each param is in millis.
 function _updateSeeker(currentPosition, trackDuration) {
-  var percentage = Math.floor(currentPosition / trackDuration * 100);
+  var position = Math.floor(currentPosition / trackDuration * 1000);
   $(".seeker-current-position").html(_millisToTime(currentPosition));
   $(".seeker-total-duration").html(_millisToTime(trackDuration));
-  $(".seeker")[0].value = percentage;
+  $(".seeker")[0].value = position;
 }
 
 /* Click Handlers. */
@@ -150,6 +150,30 @@ function _selectSong(_index) {
     currentIndex = response.index;
     _highlightSong(response.index);
   });
+}
+
+
+function _throttle(fn, threshhold, scope) {
+  threshhold || (threshhold = 250);
+  var last,
+      deferTimer;
+  return function () {
+    var context = scope || this;
+
+    var now = +new Date,
+        args = arguments;
+    if (last && now < last + threshhold) {
+      // hold on to it
+      clearTimeout(deferTimer);
+      deferTimer = setTimeout(function () {
+        last = now;
+        fn.apply(context, args);
+      }, threshhold);
+    } else {
+      last = now;
+      fn.apply(context, args);
+    }
+  };
 }
 
 function _attachClickListeners() {
@@ -203,9 +227,11 @@ function _attachClickListeners() {
     _sendMediaMessage("volume", {volume: parseInt($(this).val())})
   });
 
-  $(".seeker").on("input", function() { 
-    console.log($(this).val());
-  });
+  $(".seeker").on("input", _throttle(function() {
+    _sendMediaMessage("seek", {seek: $(this).val()}, function(state) {
+      _updateSeeker(state.currentPosition, _getNowPlaying(state).duration);
+    });
+  }, 50));
 }
 
 function _handleNotifyMessage(message, sender, sendResponse) {
