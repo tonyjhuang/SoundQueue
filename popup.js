@@ -236,12 +236,10 @@ function _attachClickListeners() {
 function _handleNotifyMessage(message, sender, sendResponse) {
   switch(message.type) {
     case "next-song":
-      console.log("next-song");
       var state = message.state;
       _unhighlightSong(currentIndex);
       currentIndex = state.index;
       _highlightSong(currentIndex);
-      console.log(state);
       _updateSeeker(0, _getNowPlaying(state).duration);
       break;
     case "svg-replace":

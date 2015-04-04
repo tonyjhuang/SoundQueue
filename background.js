@@ -143,7 +143,7 @@ function randomizeArray(o){
 
 var messageHandler = function(message, sender, sendResponse) {
   if(DEBUG) {
-    //console.log(message);
+    console.log(message);
   }
 
   switch(message.action) {
@@ -215,7 +215,6 @@ function _handleMediaMessage(message, sender, sendResponse) {
       sendResponse(state);
       break;
     case "clear":
-      console.log("clear: 0");
       widget.pause();
       state.tracks = [];
       state.index = -1;
@@ -230,7 +229,6 @@ function _handleMediaMessage(message, sender, sendResponse) {
       break;
     case "seek":
       state.currentPosition = message.options.seek / 1000 * state.tracks[state.index].duration;
-      console.log("seek: " + state.currentPosition);
       widget.seekTo(state.currentPosition);
       sendResponse(state);
       break;
