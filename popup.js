@@ -140,7 +140,6 @@ function _play() {
 }
 
 function _clear() {
-  _pause();
   _sendMediaMessage("clear", null, _initializeState);
 }
 

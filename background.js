@@ -16,16 +16,32 @@ SC.initialize({
   client_id: "be1435461b3275ac389c9f47f61e2560"
 });
 
-// keeps track of all the tracks in the queue and the current song playing
-// tracks[0].title for song title
-// tracks[0].url for song url
+/**
+ * tracks:  list of SoundCloud track objects, represents the queue
+ *
+ * index:   indexes into tracks, represents which song is currently playing
+ *
+ * replay:  should we replay the current song after it finishes?
+ *          we should consider changing functionality to replay the QUEUE
+ *
+ * playing: is the widget currently playing? we could just ask the widget
+ *          but that's asynchronous and we want to keep latency low   
+ *
+ * volume:  current volume of the widget (doesn't really seem to work as
+ *          expected. it's more binary than anything [on/off])
+ *
+ * currentPosition: current progress in song in milliseconds
+ *
+ * clear:   did the user recently clear the queue? 
+ */
 var state = {
-    tracks: [],
-    index: -1,
-    replay: false,
+    tracks:  [],
+    index:   -1,
+    replay:  false,
     playing: false,
-    volume: 50,
-    currentPosition: 0
+    volume:  50,
+    currentPosition: 0,
+    clear:   false
 };
 
 // Our SoundCloud widget gets embedded on the persistent and
@@ -70,7 +86,7 @@ var playSong = function(index, respectCurrentPlayState) {
       state.playing = true;
     }
 
-    if(state.index === index) {
+    if(state.index === index && !state.clear) {
       // in case the user has paused the song and then seeked
       // to a new position.
       widget.seekTo(state.currentPosition);
@@ -79,6 +95,7 @@ var playSong = function(index, respectCurrentPlayState) {
       }
     } else {
       state.index = index;
+      state.clear = false;
       var currentSongUri = state.tracks[index].uri;
       widget.load(currentSongUri, {
         callback: function() {
@@ -198,10 +215,13 @@ function _handleMediaMessage(message, sender, sendResponse) {
       sendResponse(state);
       break;
     case "clear":
+      console.log("clear: 0");
+      widget.pause();
       state.tracks = [];
       state.index = -1;
       state.playing = false;
       state.currentPosition = 0;
+      state.clear = true;
       sendResponse(state);
       break;
     case "volume":
@@ -210,6 +230,7 @@ function _handleMediaMessage(message, sender, sendResponse) {
       break;
     case "seek":
       state.currentPosition = message.options.seek / 1000 * state.tracks[state.index].duration;
+      console.log("seek: " + state.currentPosition);
       widget.seekTo(state.currentPosition);
       sendResponse(state);
       break;
@@ -271,7 +292,17 @@ $(function() {
       ignoreNextPlayProgressEvent = false;
       return;
     }
+
     state.currentPosition = progress.currentPosition;
+
+    // Similar to ignoreNextPlayProgressEvent, when the user clears the
+    // queue, one final play-progress event is fired off when the widget
+    // pauses. We want to avoid sending that final event and instead
+    // keep the currentPosition value 0.
+    if(state.clear) {
+      state.currentPosition = 0;
+    }
+
     chrome.runtime.sendMessage({
       action: "NOTIFY",
       type: "song-progress",
