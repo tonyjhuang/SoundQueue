@@ -50,7 +50,7 @@ var state = {
 // non-user facing background.html page. Controls sound streaming.
 var widget;
 
-var addToQueue = function(url) {
+function addToQueue (url) {
   SC.get('http://api.soundcloud.com/resolve.json?url=' + url,
     function(result) {
       if(DEBUG) {
@@ -81,10 +81,16 @@ var addToQueue = function(url) {
 // updates the state appropriately. if respectCurrentPlayState
 // is set to true, only play the widget if the current state
 // is already playing.
-var playSong = function(index, respectCurrentPlayState) {
+function playSong(index, options) {
   if(index >= 0 && index < state.tracks.length) {
     
-    if(!respectCurrentPlayState) {
+    // If respectCurrentPlayState is set and true, then only 
+    // start playing the new song if the currently queued  
+    // song is already playing. If nothing is currently
+    // playing then just load the new song into the widget.
+    //
+    // If respectCurrentPlayState not true or unset, then play the new song.
+    if(typeof options === 'undefined' || !options.respectCurrentPlayState) {
       state.playing = true;
     }
 
@@ -174,7 +180,7 @@ var messageHandler = function(message, sender, sendResponse) {
 function _handleMediaMessage(message, sender, sendResponse) {
   switch(message.type) {
     case "play":
-      playSong(state.index, false);
+      playSong(state.index);
       sendResponse(state);
       break;
     case "pause":
@@ -183,20 +189,23 @@ function _handleMediaMessage(message, sender, sendResponse) {
       break;
     case "prev":
       state.currentPosition = 0;
-      playSong(Math.max(state.index - 1, -1), true);
+      playSong(Math.max(state.index - 1, -1), 
+        {respectCurrentPlayState: true});
       sendResponse(state);
       _notifyNextSong();
       break;
     case "next":
       state.currentPosition = 0;
-      playSong(Math.min(state.index + 1, state.tracks.length), true);
+      playSong(Math.min(state.index + 1, state.tracks.length), 
+        {respectCurrentPlayState: true});
       sendResponse(state);
       _notifyNextSong();
       break;
     case "select":
       ignoreNextPlayProgressEvent = true; // see variable declaration comment.
       state.currentPosition = 0;
-      playSong(message.options.index, true)
+      playSong(message.options.index, 
+        {respectCurrentPlayState: true})
       sendResponse(state);
       _notifyNextSong();
       break;
