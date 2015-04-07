@@ -8,8 +8,10 @@
 Env variable to facilitate debugging. 
 
 PLEASE PLEASE PLEASE switch this to false when you're packing this for prod.
+
+Mainly used to turn out some extra logging.
 */
-var DEBUG = true;
+var DEBUG = false;
 
 // Initialize Soundcloud SDK
 SC.initialize({
@@ -277,9 +279,8 @@ $(function() {
     if (state.replay) {
       playSong(state.index);
     } else {
-      state.index++;
-      if (state.index < state.tracks.length) {
-        playSong(state.index);
+      if (state.index + 1 < state.tracks.length) {
+        playSong(state.index + 1);
         _notifyNextSong();
       }
     }
