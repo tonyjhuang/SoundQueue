@@ -5,13 +5,18 @@
 
 
 /* 
-Env variable to facilitate debugging. 
-
-PLEASE PLEASE PLEASE switch this to false when you're packing this for prod.
-
-Mainly used to turn out some extra logging.
+  Some env variables to control optional debug behaviors
 */
-var DEBUG = false;
+var ENV = 'debug'; // 'prod'
+var DEBUG = {
+  log: true,
+  autoPlay: false,
+  createQueue: false
+};
+
+function isProd() {
+  return ENV === 'prod';
+}
 
 // Initialize Soundcloud SDK
 SC.initialize({
@@ -53,7 +58,7 @@ var widget;
 function addToQueue (url) {
   SC.get('http://api.soundcloud.com/resolve.json?url=' + url,
     function(result) {
-      if(DEBUG) {
+      if(!isProd() && DEBUG.log) {
         console.log(result);
       }
 
@@ -67,8 +72,7 @@ function addToQueue (url) {
 
       if (state.index === -1) {
         state.index = 0;
-        if(!DEBUG) { 
-          // Let's NOT autoplay the song on first add to avoid migraines.
+        if(isProd() || DEBUG.autoPlay) {
           playSong(state.index);
           state.playing = true;
         }
@@ -150,7 +154,7 @@ function randomizeArray(o){
 };
 
 var messageHandler = function(message, sender, sendResponse) {
-  if(DEBUG) {
+  if(!isProd() && DEBUG.log) {
     console.log(message);
   }
 
@@ -318,7 +322,7 @@ $(function() {
     });
   }, 100));
 
-  if(DEBUG) {
+  if(!isProd() && DEBUG.createQueue) {
     addToQueue("https://soundcloud.com/mellomusicgroup/pete-rock-one-two-a-few-more-1");
     addToQueue("https://soundcloud.com/wrgmag/whats-really-good-mix-series-vol18-by-deejay-theory");
     addToQueue("http://soundcloud.com/iamgangus/drderggangus-old-chub");
