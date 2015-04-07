@@ -192,24 +192,31 @@ function _handleMediaMessage(message, sender, sendResponse) {
       state.playing = false;
       break;
     case "prev":
-      state.currentPosition = 0;
-      playSong(Math.max(state.index - 1, -1), 
-        {respectCurrentPlayState: true});
-      sendResponse(state);
-      _notifyNextSong();
+      if(state.currentPosition > 5000) {
+        // If we're more than 5 seconds into a song, restart the song.
+        state.currentPosition = 0;
+        playSong(state.index, {respectCurrentPlayState: true});
+        sendResponse(state);
+      } else {
+        // Otherwise, go to the previous song.
+        state.currentPosition = 0;
+        var newSongIndex = Math.max(state.index - 1, -1);
+        playSong(newSongIndex, {respectCurrentPlayState: true});
+        sendResponse(state);
+        _notifyNextSong();  
+      }
       break;
     case "next":
       state.currentPosition = 0;
-      playSong(Math.min(state.index + 1, state.tracks.length), 
-        {respectCurrentPlayState: true});
+      var newSongIndex = Math.min(state.index + 1, state.tracks.length);
+      playSong(newSongIndex, {respectCurrentPlayState: true});
       sendResponse(state);
       _notifyNextSong();
       break;
     case "select":
       ignoreNextPlayProgressEvent = true; // see variable declaration comment.
       state.currentPosition = 0;
-      playSong(message.options.index, 
-        {respectCurrentPlayState: true})
+      playSong(message.options.index, {respectCurrentPlayState: true});
       sendResponse(state);
       _notifyNextSong();
       break;
