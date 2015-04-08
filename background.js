@@ -7,10 +7,10 @@
 /* 
   Some env variables to control optional debug behaviors
 */
-var ENV = 'debug'; // 'prod'
+var ENV = 'prod'; // 'debug'
 var DEBUG = {
-  log: true,
-  autoPlay: false,
+  log: false,
+  autoPlay: true,
   createQueue: false
 };
 
@@ -48,7 +48,7 @@ var state = {
     playing: false,
     volume:  50,
     currentPosition: 0,
-    clear:   false
+    clear:   true
 };
 
 // Our SoundCloud widget gets embedded on the persistent and
@@ -74,7 +74,6 @@ function addToQueue (url) {
         state.index = 0;
         if(isProd() || DEBUG.autoPlay) {
           playSong(state.index);
-          state.playing = true;
         }
       }
     }
@@ -109,6 +108,7 @@ function playSong(index, options) {
       state.index = index;
       state.clear = false;
       var currentSongUri = state.tracks[index].uri;
+      console.log(currentSongUri);
       widget.load(currentSongUri, {
         callback: function() {
           widget.setVolume(state.volume);
